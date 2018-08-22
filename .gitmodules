@@ -1,0 +1,3 @@
+[submodule "jolt_wallet"]
+	path = jolt_wallet
+	url = git@github.com:joltwallet/jolt_wallet.git

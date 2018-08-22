@@ -1,0 +1,1 @@
+COMPONENT_EXTRA_INCLUDES = $(PROJECT_PATH)/jolt_wallet/main
