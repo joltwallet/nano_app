@@ -2,7 +2,6 @@
 //#include <stdio.h>
 //#include "jolt_builtin.h"
 #include "sodium.h"
-#include "second.h"
 #include "globals.h"
 #include "gui/gui.h"
 #include "gui/graphics.h"
