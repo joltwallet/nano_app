@@ -3,7 +3,7 @@
 #include "globals.h"
 #include "gui/gui.h"
 #include "gui/graphics.h"
-//#include "menus/submenus.h"
+#include "menus/submenus.h"
 
 volatile char *private_key = NULL; // Pointer to Key in Vault
 
@@ -28,8 +28,7 @@ int app_main(int argc, char **argv) {
     menu8g2_set_element(&elements, "Block Count", NULL);
     //menu8g2_set_element(&elements, "Select Account", &menu_nano_select_account);
     menu8g2_set_element(&elements, "Select Account", NULL);
-    //menu8g2_set_element(&elements, "Address (text)", &menu_nano_address_text);
-    menu8g2_set_element(&elements, "Address (text)", NULL);
+    menu8g2_set_element(&elements, "Address (text)", &menu_nano_address_text);
     //menu8g2_set_element(&elements, "Address (QR)", &menu_nano_address_qr);
     menu8g2_set_element(&elements, "Address (QR)", NULL);
     menu8g2_create_vertical_element_menu(&nano_menu, title, &elements);

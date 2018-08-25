@@ -3,3 +3,4 @@
 .d/
 build/
 sdkconfig*
+coin.path

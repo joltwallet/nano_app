@@ -7,8 +7,8 @@ xtensa-esp32-elf-gcc -Wl,-static -nostartfiles -nodefaultlibs -nostdlib -Os \
     -Wl,-r \
     -Wl,-eapp_main \
     -Wl,--warn-unresolved-symbols \
-    build/src/libsrc.a 
-#    build/nano_lib/libnano_lib.a
+    build/src/libsrc.a \
+    build/nano_lib/libnano_lib.a
 
 # Add path as an ELF Section;
 # Format purpose and coin has uint32
