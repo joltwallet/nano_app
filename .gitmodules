@@ -4,3 +4,6 @@
 [submodule "components/nano_lib"]
 	path = components/nano_lib
 	url = git@github.com:joltwallet/nano_lib.git
+[submodule "components/nano_parse"]
+	path = components/nano_parse
+	url = git@github.com:joltwallet/nano_parse.git

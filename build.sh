@@ -8,6 +8,7 @@ xtensa-esp32-elf-gcc -Wl,-static -nostartfiles -nodefaultlibs -nostdlib -Os \
     -Wl,-eapp_main \
     -Wl,--warn-unresolved-symbols \
     build/src/libsrc.a \
+    -Wl,-whole-archive build/nano_parse/libnano_parse.a -Wl,-no-whole-archive \
     build/nano_lib/libnano_lib.a
 
 # Add path as an ELF Section;

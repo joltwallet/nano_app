@@ -21,7 +21,7 @@
 #include "hal/storage.h"
 #include "../qr_helper.h"
 
-const char TAG[] = "nano_qr";
+static const char TAG[] = "nano_qr";
 
 
 void menu_nano_address_qr(menu8g2_t *prev){
