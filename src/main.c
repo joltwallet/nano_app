@@ -20,8 +20,7 @@ int app_main(int argc, char **argv) {
     menu8g2_elements_init(&elements, 7);
     //menu8g2_set_element(&elements, "Balance", &menu_nano_balance);
     menu8g2_set_element(&elements, "Balance", NULL);
-    //menu8g2_set_element(&elements, "Receive", &menu_nano_receive);
-    menu8g2_set_element(&elements, "Receive", NULL);
+    menu8g2_set_element(&elements, "Receive", &menu_nano_receive);
     //menu8g2_set_element(&elements, "Send (contact)", &menu_nano_send_contact);
     menu8g2_set_element(&elements, "Send (contact)", NULL);
     menu8g2_set_element(&elements, "Block Count", &menu_nano_block_count);
