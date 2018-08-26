@@ -25,9 +25,7 @@ int app_main(int argc, char **argv) {
     //menu8g2_set_element(&elements, "Send (contact)", &menu_nano_send_contact);
     menu8g2_set_element(&elements, "Send (contact)", NULL);
     menu8g2_set_element(&elements, "Block Count", &menu_nano_block_count);
-    //menu8g2_set_element(&elements, "Block Count", NULL);
-    //menu8g2_set_element(&elements, "Select Account", &menu_nano_select_account);
-    menu8g2_set_element(&elements, "Select Account", NULL);
+    menu8g2_set_element(&elements, "Select Account", &menu_nano_select_account);
     menu8g2_set_element(&elements, "Address (text)", &menu_nano_address_text);
     menu8g2_set_element(&elements, "Address (QR)", &menu_nano_address_qr);
     menu8g2_create_vertical_element_menu(&nano_menu, title, &elements);

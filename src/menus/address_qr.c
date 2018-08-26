@@ -55,6 +55,7 @@ void menu_nano_address_qr(menu8g2_t *prev){
         if(xQueueReceive(prev->input_queue, &input_buf, portMAX_DELAY)) {
             if(input_buf & (1ULL << EASY_INPUT_BACK)){
                 // Restore User's Brightness
+                ESP_LOGI(TAG, "Restoring Display Brightness");
                 SCREEN_MUTEX_TAKE;
                 u8g2_SetContrast(prev->u8g2, get_display_brightness());
                 SCREEN_MUTEX_GIVE;
