@@ -20,6 +20,7 @@
 #include "gui/loading.h"
 #include "gui/gui.h"
 #include "../nano_helpers.h"
+#include "../confirmation.h"
 
 static const char TAG[] = "nano_receive";
 static const char TITLE[] = "Receive Nano";
@@ -153,8 +154,14 @@ void menu_nano_receive(menu8g2_t *prev){
      **************************/
     loading_disable();
     ESP_LOGI(TAG, "Signing Block");
-    if( E_SUCCESS != nl_block_sign(&receive_block, my_private_key) ) {
-        ESP_LOGI(TAG, "Error Signing Block");
+    if( nano_confirm_block(m, &frontier_block, &receive_block) ) {
+        if( E_SUCCESS != nl_block_sign(&receive_block, my_private_key) ) {
+            ESP_LOGI(TAG, "Error Signing Block");
+            goto exit;
+        }
+    }
+    else {
+        ESP_LOGI(TAG, "User cancelled block during confirmation");
         goto exit;
     }
     loading_enable();
