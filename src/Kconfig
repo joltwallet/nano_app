@@ -46,4 +46,11 @@ config JOLT_NANO_CONFIRM_DECIMALS
         Number of decimals to display to the user when confirming transaction 
         data.
 
+config JOLT_NANO_CONSOLE_ENABLE
+    bool
+    prompt "Enable Nano commands on the CLI"
+    default n
+    help
+        Compile with the command-line interface
+
 endmenu

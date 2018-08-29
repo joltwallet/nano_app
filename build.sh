@@ -1,4 +1,5 @@
 BIN_NAME=Nano.elf
+BIN_COMPRESSED_NAME=Nano_s.elf
 rm ${BIN_NAME}
 make
 xtensa-esp32-elf-gcc -Wl,-static -nostartfiles -nodefaultlibs -nostdlib -Os \
@@ -29,3 +30,15 @@ printf $BIP32_KEY >> coin.path
 if [[ "$OSTYPE" == "darwin"* ]]; then
     gobjcopy --add-section .coin.path=coin.path ${BIN_NAME}
 fi
+rm coin.path
+
+####################
+# Compress the ELF #
+####################
+ELF_SIZE=$(stat -f%z $BIN_NAME)
+# Prepend the uncompressed file size to the compressed data
+printf "0: %.8x" $ELF_SIZE | sed -E 's/0: (..)(..)(..)(..)/0: \4\3\2\1/' | \
+        xxd -r -g0 > $BIN_COMPRESSED_NAME
+# perform compression
+./heatshrink -w 8 -l 4 $BIN_NAME >> $BIN_COMPRESSED_NAME
+
