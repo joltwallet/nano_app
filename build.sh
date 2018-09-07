@@ -1,5 +1,5 @@
-BIN_NAME=Nano.elf
-BIN_COMPRESSED_NAME=Nano_s.elf
+BIN_NAME=Nano_uncompressed.elf
+BIN_COMPRESSED_NAME=Nano.elf
 rm ${BIN_NAME}
 make
 xtensa-esp32-elf-gcc -Wl,-static -nostartfiles -nodefaultlibs -nostdlib -Os \
