@@ -77,7 +77,7 @@ bool nano_get_contact_name(char *buf, size_t buf_len, const int index){
         return false;
     }
 
-    if( size>buf_len || !storage_get_str(NULL, &size, STORAGE_NAMESPACE, key, "") ) {
+    if( size>buf_len || !storage_get_str(buf, &size, STORAGE_NAMESPACE, key, "") ) {
         return false;
     }
 
