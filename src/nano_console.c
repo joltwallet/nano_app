@@ -20,6 +20,8 @@
 #include "gui/loading.h"
 
 
+#if CONFIG_JOLT_NANO_CONSOLE_ENABLE
+#include "nano_console.h"
 static const char* TAG = "console_nano";
 
 #if 0
@@ -516,3 +518,4 @@ void console_nano_register(subconsole_t *subconsole ) {
     ESP_ERROR_CHECK( subconsole_cmd_register(subconsole, &cmd) );
 #endif
 }
+#endif
