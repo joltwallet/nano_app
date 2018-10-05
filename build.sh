@@ -11,7 +11,6 @@ xtensa-esp32-elf-gcc -Wl,-static -nostartfiles -nodefaultlibs -nostdlib -Os \
     -Wl,-r \
     -Wl,-eapp_main \
     -Wl,--warn-unresolved-symbols \
-    -Wl,--hash-style=gnu \
     build/src/libsrc.a \
     -Wl,-whole-archive build/nano_parse/libnano_parse.a -Wl,-no-whole-archive \
     build/nano_lib/libnano_lib.a
@@ -38,12 +37,13 @@ rm coin.path
 
 # Remove unneccessary sections
 if $STRIP; then
-    gobjcopy --remove-section .comment ${BIN_NAME}
-    gobjcopy --remove-section .xtensa.info ${BIN_NAME}
-    gobjcopy --remove-section .xt.prop ${BIN_NAME}
-    gobjcopy --remove-section .rela.xt.prop ${BIN_NAME}
-    gobjcopy --remove-section .xt.lit ${BIN_NAME}
-    gobjcopy --remove-section .rela.xt.lit ${BIN_NAME}
+    gobjcopy --remove-section=.comment \
+             --remove-section=.xtensa.info \
+             --remove-section=.xt.prop \
+             --remove-section=.rela.xt.prop \
+             --remove-section=.xt.lit \
+             --remove-section=.rela.xt.lit \
+             $BIN_NAME
 fi
 
 ####################
