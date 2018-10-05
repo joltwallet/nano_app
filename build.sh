@@ -43,6 +43,9 @@ if $STRIP; then
              --remove-section=.rela.xt.prop \
              --remove-section=.xt.lit \
              --remove-section=.rela.xt.lit \
+             --remove-section=.data \
+             --remove-section=.bss \
+             --remove-section=.text \
              $BIN_NAME
 fi
 
