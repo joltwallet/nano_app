@@ -1,5 +1,8 @@
 BIN_NAME=Nano_uncompressed.elf
 BIN_COMPRESSED_NAME=Nano.elf
+
+STRIP=true
+
 rm ${BIN_NAME}
 make
 xtensa-esp32-elf-gcc -Wl,-static -nostartfiles -nodefaultlibs -nostdlib -Os \
@@ -8,6 +11,7 @@ xtensa-esp32-elf-gcc -Wl,-static -nostartfiles -nodefaultlibs -nostdlib -Os \
     -Wl,-r \
     -Wl,-eapp_main \
     -Wl,--warn-unresolved-symbols \
+    -Wl,--hash-style=gnu \
     build/src/libsrc.a \
     -Wl,-whole-archive build/nano_parse/libnano_parse.a -Wl,-no-whole-archive \
     build/nano_lib/libnano_lib.a
@@ -31,6 +35,16 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
     gobjcopy --add-section .coin.path=coin.path ${BIN_NAME}
 fi
 rm coin.path
+
+# Remove unneccessary sections
+if $STRIP; then
+    gobjcopy --remove-section .comment ${BIN_NAME}
+    gobjcopy --remove-section .xtensa.info ${BIN_NAME}
+    gobjcopy --remove-section .xt.prop ${BIN_NAME}
+    gobjcopy --remove-section .rela.xt.prop ${BIN_NAME}
+    gobjcopy --remove-section .xt.lit ${BIN_NAME}
+    gobjcopy --remove-section .rela.xt.lit ${BIN_NAME}
+fi
 
 ####################
 # Compress the ELF #
