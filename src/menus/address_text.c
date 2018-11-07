@@ -2,31 +2,28 @@
  Copyright (C) 2018  Brian Pugh, James Coxon, Michael Smaili
  https://www.joltwallet.com/
  */
-
-#include "freertos/FreeRTOS.h"
-#include "freertos/queue.h"
-#include "freertos/task.h"
-#include "sodium.h"
-#include "esp_log.h"
-
+#include "jolt_lib.h"
 #include "nano_lib.h"
-#include "menu8g2.h"
-#include "submenus.h"
+#include "esp_log.h"
 #include "../nano_helpers.h"
+#include "submenus.h"
 
 static const char* TAG = "nano_add_text";
 static const char TITLE[] = "Nano Address";
 
-void menu_nano_address_text(menu8g2_t *prev){
+
+static lv_action_t menu_nano_address_text_cb( lv_obj_t *dummy ) {
     char address[ADDRESS_BUF_LEN];
     if( !nano_get_address(address) ) {
         return;
     }
     ESP_LOGI(TAG, "Address: %s", address);
-    for(;;){
-        if(menu8g2_display_text_title(prev, address, TITLE)
-                & (1ULL << EASY_INPUT_BACK)){
-            return;
-        }
-    }
+    jolt_gui_scr_text_create(TITLE, address);
+
+    return LV_RES_OK;
+}
+
+lv_action_t menu_nano_address_text( lv_obj_t *btn ) {
+    vault_refresh(NULL, menu_nano_address_text_cb);
+    return LV_RES_OK;
 }

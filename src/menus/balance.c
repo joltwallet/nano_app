@@ -2,47 +2,28 @@
  Copyright (C) 2018  Brian Pugh, James Coxon, Michael Smaili
  https://www.joltwallet.com/
  */
-
-#include "esp_log.h"
-#include "freertos/FreeRTOS.h"
-#include "freertos/queue.h"
-#include "freertos/task.h"
-#include "menu8g2.h"
+#include "jolt_lib.h"
 #include "nano_lib.h"
-#include "nano_parse.h"
-#include "nano_rest.h"
-#include "sodium.h"
-#include <string.h>
-
-#include "globals.h"
-#include "gui/gui.h"
-#include "gui/loading.h"
-#include "vault.h"
-
+#include "esp_log.h"
 #include "../nano_helpers.h"
 #include "submenus.h"
+#include "nano_parse.h"
 
 static const char TAG[] = "nano_balance";
 static const char TITLE[] = "Nano Balance";
 
 
-void menu_nano_balance(menu8g2_t *prev){
-    /*
-     * Blocks involved:
-     * frontier_block - frontier of our account chain
-     */
-    menu8g2_t menu_obj;
-    menu8g2_t *m = &menu_obj;
-    menu8g2_copy(m, prev);
-
+lv_action_t menu_nano_balance_cb( lv_obj_t *dummy ) {
     double display_amount;
+
+    lv_obj_t *scr = jolt_gui_scr_loading_create(TITLE);
 
     /*********************
      * Get My Public Key *
      *********************/
     uint256_t my_public_key;
     if( !nano_get_public(my_public_key) ) {
-        goto exit;
+        return LV_RES_OK;
     }
 
     /********************************************
@@ -51,8 +32,7 @@ void menu_nano_balance(menu8g2_t *prev){
     // Assumes State Blocks Only
     // Outcome:
     //     * frontier_hash, frontier_block
-    loading_enable();
-    loading_text_title("Getting Frontier", TITLE);
+    jolt_gui_scr_loading_update(scr, NULL, "Getting Frontier", 50);
 
     nl_block_t frontier_block;
     nl_block_init(&frontier_block);
@@ -63,7 +43,6 @@ void menu_nano_balance(menu8g2_t *prev){
             ESP_LOGI(TAG, "Successfully fetched frontier block");
             if( E_SUCCESS != nl_mpi_to_nano_double(&(frontier_block.balance),
                         &display_amount) ){
-                goto exit;
             }
             ESP_LOGI(TAG, "Approximate Account Balance: %0.3lf", display_amount);
             break;
@@ -76,15 +55,13 @@ void menu_nano_balance(menu8g2_t *prev){
     char buf[100];
     snprintf(buf, sizeof(buf), "%0.3lf Nano", display_amount);
 
-    loading_disable();
-    for(;;){
-        if(menu8g2_display_text_title(m, buf, TITLE)
-                & (1ULL << EASY_INPUT_BACK)){
-            goto exit;
-        }
-    }
+    lv_obj_del(scr);
+    jolt_gui_scr_text_create(TITLE, buf);
 
-    exit:
-        loading_disable();
-        return;
+    return LV_RES_OK;
+}
+
+lv_action_t menu_nano_balance( lv_obj_t *btn ) {
+    vault_refresh(NULL, menu_nano_balance_cb);
+    return LV_RES_OK;
 }

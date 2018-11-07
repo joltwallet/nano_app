@@ -7,27 +7,29 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "u8g2.h"
 #include "jolttypes.h"
-#include "qrcode.h"
-#include "qr_helper.h"
+#include "qr_helpers.h"
 #include "nano_lib.h"
 #include "mbedtls/bignum.h"
 
-jolt_err_t public_to_qr(QRCode *qrcode, uint8_t *qrcode_bytes, 
-        uint256_t public_key, mbedtls_mpi *amount){
-    char buf[120];
+/* Creates a receive string at the public key for the specified amount of raw */
+jolt_err_t receive_url_create(
+        char *buf, size_t buf_len,
+        const uint256_t public_key, const mbedtls_mpi *amount ) {
+
     char address[ADDRESS_BUF_LEN];
     char amount_str[BALANCE_DEC_BUF_LEN];
     size_t olen;
     jolt_err_t err;
 
+    /* Translate the public key to an address string */
     err = nl_public_to_address(address, sizeof(address), public_key);
     if(err != E_SUCCESS){
         return err;
     }
 
-    if (amount==NULL){
+    /* Translate the numerical amount to a string */
+    if ( NULL == amount ) {
         strcpy(amount_str, "0");
     }
     else{
@@ -60,6 +62,7 @@ jolt_err_t public_to_qr(QRCode *qrcode, uint8_t *qrcode_bytes,
     #endif
 
     #if CONFIG_JOLT_QR_TYPE_SHORT
+    /* Can be represeented using a more compact QR type */
     strcpy(buf, toupper(address));
     if(buf[0]=='x' || buf[0]=='X'){
         buf[3] = '-';
@@ -69,7 +72,5 @@ jolt_err_t public_to_qr(QRCode *qrcode, uint8_t *qrcode_bytes,
     }
     #endif
 
-    qrcode_initText(qrcode, qrcode_bytes, CONFIG_JOLT_QR_VERSION,
-            ECC_LOW, buf);
     return E_SUCCESS;
 }

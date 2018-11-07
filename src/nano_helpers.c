@@ -2,10 +2,7 @@
 #include <stddef.h>
 #include <string.h>
 #include "nano_lib.h"
-#include "vault.h"
-#include "hal/storage.h"
-#include "sodium.h"
-#include "globals.h"
+#include "jolt_lib.h"
 
 #define HARDEN 0x80000000
 
@@ -19,15 +16,18 @@ bool nano_index_set(uint32_t index) {
     return storage_set_u32(index, "nano", "index");
 }
 
+/* Assumes thaat the vault has been externally refreshed */
 bool nano_index_get_private(uint256_t private_key, const uint32_t index) {
     CONFIDENTIAL hd_node_t node;
 
-    if ( !vault_refresh() ) {
+    vault_sem_take();
+    if( vault->valid ) {
+        hd_node_copy(&node, &vault->node);
+    }
+    else {
+        vault_sem_give();
         return false;
     }
-
-    vault_sem_take();
-    hd_node_copy(&node, &vault->node);
     vault_sem_give();
 
     hd_node_iterate(&node, index | HARDEN);

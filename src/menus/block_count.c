@@ -3,34 +3,23 @@
  https://www.joltwallet.com/
  */
 
-#include "freertos/FreeRTOS.h"
-#include "freertos/queue.h"
-#include "freertos/task.h"
-
-#include "nano_parse.h"
-#include "menu8g2.h"
-
+#include "jolt_lib.h"
 #include "submenus.h"
-#include "globals.h"
-#include "gui/statusbar.h"
-#include "gui/gui.h"
+#include "nano_parse.h"
+#include "submenus.h"
 
 static const char TITLE[] = "Block Count";
 
-
-void menu_nano_block_count(menu8g2_t *prev){
-    char block_count[12];
-    sprintf(block_count, "%d", nanoparse_web_block_count());
-    menu8g2_t menu;
-    menu8g2_copy(&menu, prev);
-
-    for(;;){
-        if(menu8g2_display_text_title(&menu, block_count, TITLE) 
-                & (1ULL << EASY_INPUT_BACK)){
-            goto exit;
-        }
+lv_action_t menu_nano_block_count(lv_obj_t *btn) {
+    char block_count[20];
+    uint32_t count = nanoparse_web_block_count();
+    if( 0 == count ) {
+        jolt_gui_scr_text_create(TITLE, "Couldn't contact server."); // todo; JoltOS generic messages
     }
-
-    exit:
-        return;
+    else {
+        sprintf(block_count, "%d", nanoparse_web_block_count());
+        jolt_gui_scr_text_create(TITLE, block_count);
+    }
+    return LV_RES_OK;
 }
+

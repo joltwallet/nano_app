@@ -1,12 +1,26 @@
 #include <stddef.h>
 #include "sodium.h"
 
-#include "globals.h"
-#include "gui/gui.h"
-#include "gui/graphics.h"
+#include "jolt_gui/jolt_gui.h"
 #include "menus/submenus.h"
-#include "nano_console.h"
+//#include "nano_console.h"
 
+int app_main(int argc, char **argv) {
+    const char title[] = "Nano";
+    lv_obj_t *menu = jolt_gui_scr_menu_create(title);
+    jolt_gui_scr_menu_add(menu, NULL, "Balance", menu_nano_balance);
+    jolt_gui_scr_menu_add(menu, NULL, "Receive", NULL);
+    jolt_gui_scr_menu_add(menu, NULL, "Send (contact)", NULL);
+    jolt_gui_scr_menu_add(menu, NULL, "Block Count", menu_nano_block_count);
+    jolt_gui_scr_menu_add(menu, NULL, "Select Account", menu_nano_select_account);
+    jolt_gui_scr_menu_add(menu, NULL, "Address (text)", menu_nano_address_text);
+    jolt_gui_scr_menu_add(menu, NULL, "Address (QR)", menu_nano_address_qr);
+
+    /* Always return the pointer to the main app menu */
+    return menu;
+}
+
+#if 0
 int console(int argc, char **argv);
 
 int app_main(int argc, char **argv) {
@@ -131,4 +145,5 @@ int console(int argc, char **argv) {
 #endif
     return 0;
 }
+#endif
 #endif
