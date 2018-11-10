@@ -7,7 +7,6 @@
 #include "esp_log.h"
 #include "../nano_helpers.h"
 #include "submenus.h"
-#include "nano_parse.h"
 
 static const char TAG[] = "nano_sel_acc";
 static const char TITLE[] = "Nano Account";

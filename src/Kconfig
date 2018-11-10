@@ -1,0 +1,66 @@
+menu "Jolt Nano Currencu App"
+
+config JOLT_NANO_DEFAULT_REPRESENTATIVE
+    string
+    prompt "Default Nano Account Representative"
+    default "xrb_1cwswatjifmjnmtu5toepkwca64m7qtuukizyjxsghujtpdr9466wjmn89d8"
+    help
+        Default representative for new Nano Accounts
+
+config JOLT_NANO_CONTACTS_MAX
+    int
+    prompt "Maximum number of stored nano contacts"
+    default 10
+    help
+        Default representative for new Nano Accounts
+
+config JOLT_NANO_CONTACTS_NAME_LEN
+    int
+    prompt "Maximum length of Nano contact alias"
+    default 18
+    help
+        Maximum number of characters (including null-term) to store for a
+        Nano contact alias
+
+config JOLT_NANO_SEND_DIGITS
+    int
+    prompt "Total number of digits prompted during a send"
+    default 10
+    help
+        Total number of digits (including decimals) to prompt the user when
+        they are performing a standalone send.
+
+config JOLT_NANO_SEND_DECIMALS
+    int
+    prompt "Number of decimals prompted during a send"
+    default 3
+    help
+        Number of decimals to display to the user when they are performaing a
+        standalone send.
+
+config JOLT_NANO_CONFIRM_DECIMALS
+    int
+    prompt "Number of decimals prompted during a send"
+    default 3
+    help
+        Number of decimals to display to the user when confirming transaction 
+        data.
+
+config JOLT_NANO_CONSOLE_ENABLE
+    bool
+    prompt "Enable Nano commands on the CLI"
+    default n
+    help
+        Compile with the command-line interface
+
+choice
+    prompt "Select QR Encoding Method"
+    config JOLT_QR_TYPE_SIMPLE
+        bool "simple address encoding xrb_"
+    config JOLT_QR_TYPE_STANDARD
+        bool "Follows the Nano QR URI standard"
+    config JOLT_QR_TYPE_SHORT
+        bool "Encodes using QR alphanumeric XRB-"
+endchoice
+
+endmenu

@@ -4,5 +4,14 @@
 #
 
 PROJECT_NAME := Nano
-EXTRA_COMPONENT_DIRS = $(PROJECT_PATH)/jolt_wallet/components $(PROJECT_PATH)/jolt_wallet $(PROJECT_PATH)/src
+
+EXTRA_COMPONENT_DIRS = \
+		$(PROJECT_PATH)/src \
+		$(PROJECT_PATH)/jolt_wallet/jolt_wallet/lvgl \
+		$(PROJECT_PATH)/jolt_wallet/jolt_wallet \
+		$(PROJECT_PATH)/jolt_wallet/components
+
+CFLAGS += \
+		-DJOLT_GUI_DEBUG_FUNCTIONS
+
 include $(IDF_PATH)/make/project.mk

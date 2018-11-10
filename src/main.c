@@ -9,7 +9,7 @@ int app_main(int argc, char **argv) {
     const char title[] = "Nano";
     lv_obj_t *menu = jolt_gui_scr_menu_create(title);
     jolt_gui_scr_menu_add(menu, NULL, "Balance", menu_nano_balance);
-    jolt_gui_scr_menu_add(menu, NULL, "Receive", NULL);
+    jolt_gui_scr_menu_add(menu, NULL, "Receive", menu_nano_receive);
     jolt_gui_scr_menu_add(menu, NULL, "Send (contact)", NULL);
     jolt_gui_scr_menu_add(menu, NULL, "Block Count", menu_nano_block_count);
     jolt_gui_scr_menu_add(menu, NULL, "Select Account", menu_nano_select_account);

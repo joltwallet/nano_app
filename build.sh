@@ -3,9 +3,18 @@ BIN_COMPRESSED_NAME=Nano.elf
 
 STRIP=true
 
-rm ${BIN_NAME}
-make -j7 app
-xtensa-esp32-elf-gcc -Wl,-static -nostartfiles -nodefaultlibs -nostdlib -Os \
+printf "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
+
+if [ -f ${BIN_NAME} ] ; then
+    rm ${BIN_NAME}
+fi
+if [ -f ${BIN_COMPRESSED_NAME} ] ; then
+    rm ${BIN_COMPRESSED_NAME}
+fi
+
+make app
+
+if xtensa-esp32-elf-gcc -Wl,-static -nostartfiles -nodefaultlibs -nostdlib -Os \
     -ffunction-sections -fdata-sections -Wl,--gc-sections \
     -Wl,-T${IDF_PATH}/components/esp32/ld/esp32.rom.nanofmt.ld \
     -Wl,-T${IDF_PATH}/components/esp32/ld/esp32.rom.ld -s -o ${BIN_NAME} \
@@ -14,7 +23,14 @@ xtensa-esp32-elf-gcc -Wl,-static -nostartfiles -nodefaultlibs -nostdlib -Os \
     -Wl,--warn-unresolved-symbols \
     build/src/libsrc.a \
     -Wl,-whole-archive build/nano_parse/libnano_parse.a -Wl,-no-whole-archive \
-    build/nano_lib/libnano_lib.a
+    build/nano_lib/libnano_lib.a \
+    ;
+then
+    echo "Successfully assembled ELF"
+else
+    echo "Failed assembling ELF"
+    exit 1;
+fi
 
 # Add path as an ELF Section;
 # Format purpose and coin has uint32
@@ -58,5 +74,5 @@ ELF_SIZE=$(stat -f%z $BIN_NAME)
 printf "0: %.8x" $ELF_SIZE | sed -E 's/0: (..)(..)(..)(..)/0: \4\3\2\1/' | \
         xxd -r -g0 > $BIN_COMPRESSED_NAME
 # perform compression
-./heatshrink -w 8 -l 4 $BIN_NAME >> $BIN_COMPRESSED_NAME
+./heatshrink_bin -w 8 -l 4 $BIN_NAME >> $BIN_COMPRESSED_NAME
 
