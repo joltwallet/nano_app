@@ -7,3 +7,6 @@
 [submodule "components/nano_parse"]
 	path = components/nano_parse
 	url = git@github.com:joltwallet/nano_parse.git
+[submodule "elf2jelf"]
+	path = elf2jelf
+	url = https://github.com/joltwallet/elf2jelf.git
