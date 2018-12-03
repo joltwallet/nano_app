@@ -1,5 +1,6 @@
 *.o
 *.elf
+*.jelf
 .d/
 build/
 sdkconfig*
