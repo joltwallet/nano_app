@@ -35,7 +35,7 @@ static lv_action_t menu_nano_select_account_cb( lv_obj_t *btn ) {
     lv_obj_t *list = jolt_gui_scr_menu_get_list(menu);
 
     ESP_LOGD(TAG, "Account Select List: %p", list);
-    lv_obj_t *sel;
+    lv_obj_t *sel = NULL;
 
     for(uint8_t i=0; i < 10; i++) {
         char address[ADDRESS_BUF_LEN];
