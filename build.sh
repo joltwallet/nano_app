@@ -2,7 +2,7 @@ ELF_BIN_NAME=Nano.elf
 JELF_BIN_NAME=Nano.jelf
 BIN_COMPRESSED_NAME=Nano.jelf.hs
 COIN_PATH="44'/165'"
-BIP32_KEY="ed25519_seed"
+BIP32_KEY="ed25519 seed"
 
 STRIP=true
 
@@ -18,7 +18,7 @@ if [ -f ${BIN_COMPRESSED_NAME} ] ; then
     rm ${BIN_COMPRESSED_NAME}
 fi
 
-make app
+make app -j15
 
 if xtensa-esp32-elf-gcc -Wl,-static -nostartfiles -nodefaultlibs -nostdlib -Os \
     -ffunction-sections -fdata-sections -Wl,--gc-sections \
@@ -56,10 +56,17 @@ fi
 # Convert ELF to JELF #
 #######################
 # todo: signing key argument
-python3 elf2jelf/elf2jelf.py $ELF_BIN_NAME \
-    --output $JELF_BIN_NAME \
-    --coin $COIN_PATH \
-    --bip32key $BIP32_KEY
+if python3 elf2jelf/elf2jelf.py "$ELF_BIN_NAME" \
+    --output "$JELF_BIN_NAME" \
+    --coin "$COIN_PATH" \
+    --bip32key "$BIP32_KEY" \
+    ;
+then
+    echo "Successfully converted ELF to JELF"
+else
+    echo "Failed converting ELF to JELF"
+    exit 1;
+fi
 
 #####################
 # Compress the JELF #
@@ -69,5 +76,12 @@ JELF_SIZE=$(stat -f%z $JELF_BIN_NAME)
 printf "0: %.8x" $JELF_SIZE | sed -E 's/0: (..)(..)(..)(..)/0: \4\3\2\1/' | \
         xxd -r -g0 > $BIN_COMPRESSED_NAME
 # perform compression
-./heatshrink_bin -w 8 -l 4 $JELF_BIN_NAME >> $BIN_COMPRESSED_NAME
+if ./heatshrink_bin -w 8 -l 4 $JELF_BIN_NAME >> $BIN_COMPRESSED_NAME \
+    ;
+then
+    echo "Successfully compressed JELF file"
+else
+    echo "Failed to compress JELF file"
+    exit 1;
+fi
 

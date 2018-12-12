@@ -1,4 +1,4 @@
-menu "Jolt Nano Currencu App"
+menu "Jolt Nano Currency App"
 
 config JOLT_NANO_DEFAULT_REPRESENTATIVE
     string
