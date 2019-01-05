@@ -21,8 +21,8 @@ bool nano_index_get_private(uint256_t private_key, const uint32_t index) {
     CONFIDENTIAL hd_node_t node;
 
     vault_sem_take();
-    if( vault->valid ) {
-        hd_node_copy(&node, &vault->node);
+    if( vault_is_valid() ) {
+        hd_node_copy(&node, vault_get_node());
     }
     else {
         vault_sem_give();
