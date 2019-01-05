@@ -24,7 +24,7 @@ config JOLT_NANO_CONTACTS_NAME_LEN
 
 config JOLT_NANO_SEND_DIGITS
     int
-    prompt "Total number of digits prompted during a send"
+    prompt "Total number of digit rollers prompted during a send"
     default 10
     help
         Total number of digits (including decimals) to prompt the user when

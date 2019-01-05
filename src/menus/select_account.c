@@ -32,14 +32,11 @@ static lv_action_t menu_nano_select_account_cb( lv_obj_t *btn ) {
     ESP_LOGD(TAG, "Current Nano Address Derivation Index: %d", index);
 
     lv_obj_t *menu = jolt_gui_scr_menu_create(title);
-    lv_obj_t *list = jolt_gui_scr_menu_get_list(menu);
-
-    ESP_LOGD(TAG, "Account Select List: %p", list);
     lv_obj_t *sel = NULL;
 
     for(uint8_t i=0; i < 10; i++) {
         char address[ADDRESS_BUF_LEN];
-        char buf[20];
+        char buf[ADDRESS_BUF_LEN+16];
         if( !nano_index_get_address(address, i) ) {
             strlcpy(buf, "ERROR", sizeof(buf));
         }
@@ -52,7 +49,7 @@ static lv_action_t menu_nano_select_account_cb( lv_obj_t *btn ) {
             sel = btn;
         }
     }
-    lv_list_set_btn_selected(list, sel);
+    jolt_gui_scr_menu_set_btn_selected(menu, sel);
 
     return LV_RES_OK;
 }

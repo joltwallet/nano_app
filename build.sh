@@ -1,6 +1,7 @@
-ELF_BIN_NAME=Nano.elf
-JELF_BIN_NAME=Nano.jelf
-BIN_COMPRESSED_NAME=Nano.jelf.hs
+APP_BASENAME=Nano
+ELF_BIN_NAME=${APP_BASENAME}.elf
+JELF_BIN_NAME=${APP_BASENAME}.jelf
+JELF_BIN_COMPRESSED_NAME=${JELF_BIN_NAME}.gz
 COIN_PATH="44'/165'"
 BIP32_KEY="ed25519 seed"
 
@@ -14,8 +15,8 @@ fi
 if [ -f ${JELF_BIN_NAME} ] ; then
     rm ${JELF_BIN_NAME}
 fi
-if [ -f ${BIN_COMPRESSED_NAME} ] ; then
-    rm ${BIN_COMPRESSED_NAME}
+if [ -f ${JELF_BIN_COMPRESSED_NAME} ] ; then
+    rm ${JELF_BIN_COMPRESSED_NAME}
 fi
 
 make app -j15
@@ -67,21 +68,3 @@ else
     echo "Failed converting ELF to JELF"
     exit 1;
 fi
-
-#####################
-# Compress the JELF #
-#####################
-JELF_SIZE=$(stat -f%z $JELF_BIN_NAME)
-# Prepend the uncompressed file size to the compressed data
-printf "0: %.8x" $JELF_SIZE | sed -E 's/0: (..)(..)(..)(..)/0: \4\3\2\1/' | \
-        xxd -r -g0 > $BIN_COMPRESSED_NAME
-# perform compression
-if ./heatshrink_bin -w 8 -l 4 $JELF_BIN_NAME >> $BIN_COMPRESSED_NAME \
-    ;
-then
-    echo "Successfully compressed JELF file"
-else
-    echo "Failed to compress JELF file"
-    exit 1;
-fi
-
