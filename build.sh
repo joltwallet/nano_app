@@ -1,11 +1,19 @@
+# App Specific Parameters
 APP_BASENAME=Nano
+COIN_PATH="44'/165'"
+BIP32_KEY="ed25519 seed"
+ELF2JELF="jolt_wallet/elf2jelf/elf2jelf.py"
+PYTHONBIN="python3"
+STRIP=true
+
+# Convert names to absolute paths and stuff
 ELF_BIN_NAME=${APP_BASENAME}.elf
 JELF_BIN_NAME=${APP_BASENAME}.jelf
 JELF_BIN_COMPRESSED_NAME=${JELF_BIN_NAME}.gz
-COIN_PATH="44'/165'"
-BIP32_KEY="ed25519 seed"
-
-STRIP=true
+ELF_BIN_NAME=$(realpath $ELF_BIN_NAME)
+JELF_BIN_NAME=$(realpath $JELF_BIN_NAME)
+JELF_BIN_COMPRESSED_NAME=$(realpath $JELF_BIN_COMPRESSED_NAME)
+ELF2JELF=$(realpath $ELF2JELF)
 
 printf "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
 
@@ -57,7 +65,7 @@ fi
 # Convert ELF to JELF #
 #######################
 # todo: signing key argument
-if python3 elf2jelf/elf2jelf.py "$ELF_BIN_NAME" \
+if $PYTHONBIN $ELF2JELF  "$ELF_BIN_NAME" \
     --output "$JELF_BIN_NAME" \
     --coin "$COIN_PATH" \
     --bip32key "$BIP32_KEY" \

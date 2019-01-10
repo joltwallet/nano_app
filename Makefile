@@ -12,6 +12,7 @@ EXTRA_COMPONENT_DIRS = \
         $(PROJECT_PATH)/jolt_wallet/components
 
 CFLAGS += \
+		-DJOLT_APP \
         -DJOLT_GUI_DEBUG_FUNCTIONS
 
 include $(IDF_PATH)/make/project.mk
