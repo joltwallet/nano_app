@@ -12,7 +12,7 @@
 #include "submenus.h"
 #include "sdkconfig.h"
 
-
+#if 0
 static const char TAG[] = "nano_receive";
 static const char TITLE[] = "Receive Nano";
 
@@ -234,3 +234,10 @@ void nano_receive_task(void *param) {
         jolt_gui_sem_give();
         vTaskDelete(NULL);
 }
+#else
+lv_res_t menu_nano_receive( lv_obj_t *btn ) {
+    return LV_RES_OK;
+}
+void nano_receive_task(void *param) {
+}
+#endif

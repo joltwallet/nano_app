@@ -12,7 +12,7 @@ static const char TAG[] = "nano_sel_acc";
 static const char TITLE[] = "Nano Account";
 
 /* Stores the selected index to nano_index */
-static lv_action_t menu_nano_select_account_index_cb( lv_obj_t *btn_sel ) {
+static lv_res_t menu_nano_select_account_index_cb( lv_obj_t *btn_sel ) {
     lv_obj_t *list = lv_obj_get_parent(lv_obj_get_parent( btn_sel ));
     int32_t index = lv_list_get_btn_index(list, btn_sel);
     if( index >= 0 ) {
@@ -25,7 +25,7 @@ static lv_action_t menu_nano_select_account_index_cb( lv_obj_t *btn_sel ) {
     return LV_RES_OK;
 }
 
-static lv_action_t menu_nano_select_account_cb( lv_obj_t *btn ) {
+static lv_res_t menu_nano_select_account_cb( lv_obj_t *btn ) {
     const char title[] = "Nano";
 
     uint32_t index = nano_index_get();
@@ -54,7 +54,7 @@ static lv_action_t menu_nano_select_account_cb( lv_obj_t *btn ) {
     return LV_RES_OK;
 }
 
-lv_action_t menu_nano_select_account( lv_obj_t *btn ) {
+lv_res_t menu_nano_select_account( lv_obj_t *btn ) {
     vault_refresh(NULL, menu_nano_select_account_cb);
     return LV_RES_OK;
 }

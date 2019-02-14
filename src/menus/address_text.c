@@ -12,7 +12,7 @@ static const char* TAG = "nano_add_text";
 static const char TITLE[] = "Nano Address";
 
 
-static lv_action_t menu_nano_address_text_cb( lv_obj_t *dummy ) {
+static lv_res_t menu_nano_address_text_cb( lv_obj_t *dummy ) {
     char address[ADDRESS_BUF_LEN];
     if( !nano_get_address(address) ) {
         return;
@@ -23,7 +23,7 @@ static lv_action_t menu_nano_address_text_cb( lv_obj_t *dummy ) {
     return LV_RES_OK;
 }
 
-lv_action_t menu_nano_address_text( lv_obj_t *btn ) {
+lv_res_t menu_nano_address_text( lv_obj_t *btn ) {
     vault_refresh(NULL, menu_nano_address_text_cb);
     return LV_RES_OK;
 }

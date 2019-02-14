@@ -12,7 +12,7 @@
 
 static const char TAG[] = "nano_qr";
 
-lv_action_t menu_nano_address_qr_cb(lv_obj_t *dummy) {
+lv_res_t menu_nano_address_qr_cb(lv_obj_t *dummy) {
     char buf[120];
     uint256_t public_key;
     jolt_err_t err;
@@ -33,7 +33,7 @@ lv_action_t menu_nano_address_qr_cb(lv_obj_t *dummy) {
     return LV_RES_OK;
 }
 
-lv_action_t menu_nano_address_qr(lv_obj_t *btn) {
+lv_res_t menu_nano_address_qr(lv_obj_t *btn) {
     vault_refresh(NULL, menu_nano_address_qr_cb);
     return LV_RES_OK;
 }

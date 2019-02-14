@@ -7,19 +7,29 @@
 #include "submenus.h"
 #include "nano_parse.h"
 #include "submenus.h"
+#include "../nano_network.h"
 
+static const char TAG[] = "nano_block_count";
 static const char TITLE[] = "Block Count";
 
-lv_action_t menu_nano_block_count(lv_obj_t *btn) {
+static void network_cb( uint32_t count, void *param ) {
+    lv_obj_t *scr = param;
+    /* Delete the preloading screen */
+    jolt_gui_obj_del( scr );
+
+    /* Create the text screen */
     char block_count[20];
-    uint32_t count = nanoparse_web_block_count();
-    if( 0 == count ) {
-        jolt_gui_scr_text_create(TITLE, "Couldn't contact server."); // todo; JoltOS generic messages
-    }
-    else {
-        sprintf(block_count, "%d", nanoparse_web_block_count());
-        jolt_gui_scr_text_create(TITLE, block_count);
-    }
-    return LV_RES_OK;
+    snprintf(block_count, sizeof(block_count), "%d", count);
+    jolt_gui_scr_text_create(TITLE, block_count);
 }
 
+lv_res_t menu_nano_block_count(lv_obj_t *btn) {
+    lv_obj_t *scr;
+    scr = jolt_gui_scr_preloading_create(TITLE, "Connecting To Server");
+    if( NULL == scr ) {
+        /* Failed to create screen, return early */
+        return LV_RES_OK;
+    }
+    nano_network_block_count(network_cb, scr);
+    return LV_RES_OK;
+}
