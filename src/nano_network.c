@@ -45,16 +45,21 @@ typedef struct {
     }
 
 #define CMD_PREAMBLE \
-    char rpc_command[NANOPARSE_CMD_BUF_LEN] = { 0 }; \
+    char *rpc_command = malloc(NANOPARSE_CMD_BUF_LEN); \
+    if( NULL == rpc_command ) { \
+        return ESP_FAIL; \
+    } \
     cb_struct_t *s; \
     s = malloc( sizeof(cb_struct_t) ); \
     if( NULL == s ) { \
+        free( rpc_command ); \
         return ESP_FAIL; \
     } \
     s->cb = cb; \
     s->param = param;
 
 #define CMD_POSTAMBLE( x ) \
+    free( rpc_command ); \
     return jolt_network_post( rpc_command, x, s );
     
 
