@@ -24,6 +24,6 @@ static lv_res_t menu_nano_address_text_cb( lv_obj_t *dummy ) {
 }
 
 lv_res_t menu_nano_address_text( lv_obj_t *btn ) {
-    vault_refresh(NULL, menu_nano_address_text_cb);
+    vault_refresh(NULL, menu_nano_address_text_cb, NULL);
     return LV_RES_OK;
 }

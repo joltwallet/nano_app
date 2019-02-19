@@ -60,7 +60,7 @@ typedef struct {
 
 #define CMD_POSTAMBLE( x ) \
     free( rpc_command ); \
-    return jolt_network_post( rpc_command, x, s );
+    return jolt_network_post( rpc_command, x, s, NULL );
     
 
 /* Last part of any internal cb. Free the response, call the cb, then return */
@@ -92,7 +92,7 @@ exit:
 }
 esp_err_t nano_network_block_count(nano_network_block_count_cb_t cb, void *param) {
     CMD_PREAMBLE;
-    snprintf( rpc_command, sizeof(rpc_command),
+    snprintf( rpc_command, NANOPARSE_CMD_BUF_LEN,
             "{\"action\":\"block_count\"}" );
     CMD_POSTAMBLE(nano_network_block_count_cb);
 }
@@ -111,7 +111,7 @@ esp_err_t nano_network_work( const hex256_t hash, nano_network_work_cb_t cb, voi
     hex256_t hash_upper;
     strlcpy( hash_upper, hash, sizeof(hash_upper) );
     strupr( hash_upper );
-    snprintf( (char *) rpc_command, sizeof(rpc_command),
+    snprintf( (char *) rpc_command, NANOPARSE_CMD_BUF_LEN,
             "{\"action\":\"work_generate\",\"hash\":\"%s\"}",
             hash_upper );
     CMD_POSTAMBLE( nano_network_work_cb );
@@ -130,7 +130,7 @@ exit:
 }
 esp_err_t nano_network_account_frontier( const char *account_address, nano_network_account_frontier_cb_t cb, void *param ){
     CMD_PREAMBLE;
-    snprintf( (char *) rpc_command, sizeof(rpc_command),
+    snprintf( (char *) rpc_command, NANOPARSE_CMD_BUF_LEN,
             "{\"action\":\"accounts_frontiers\",\"accounts\":[\"%s\"]}",
             account_address);
     CMD_POSTAMBLE( nano_network_account_frontier_cb );
@@ -150,7 +150,7 @@ exit:
 }
 esp_err_t nano_network_block( const hex256_t block_hash, nano_network_block_cb_t cb, void *param ){
     CMD_PREAMBLE;
-    snprintf( (char *) rpc_command, sizeof(rpc_command),
+    snprintf( (char *) rpc_command, NANOPARSE_CMD_BUF_LEN,
              "{\"action\":\"block\",\"hash\":\"%s\"}",
              block_hash);
     CMD_POSTAMBLE( nano_network_block_cb );
@@ -177,7 +177,7 @@ exit:
 }
 esp_err_t nano_network_pending_hash( const char *account_address, nano_network_pending_hash_cb_t cb, void *param ){
     CMD_PREAMBLE;
-    snprintf( (char *) rpc_command, sizeof(rpc_command),
+    snprintf( (char *) rpc_command, NANOPARSE_CMD_BUF_LEN,
              "{\"action\":\"accounts_pending\","
              "\"count\": 1,"
              "\"source\": \"true\","
@@ -228,6 +228,6 @@ exit:
 }
 esp_err_t nano_network_process( const nl_block_t *block, nano_network_process_cb_t cb, void *param) {
     CMD_PREAMBLE;
-    nanoparse_process(block, rpc_command, sizeof(rpc_command));
+    nanoparse_process(block, rpc_command, NANOPARSE_CMD_BUF_LEN);
     CMD_POSTAMBLE( nano_network_process_cb );
 }

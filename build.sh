@@ -4,7 +4,6 @@ COIN_PATH="44'/165'"
 BIP32_KEY="ed25519 seed"
 ELF2JELF="jolt_wallet/elf2jelf/elf2jelf.py"
 PYTHONBIN="python3"
-STRIP=true
 
 # Convert names to absolute paths and stuff
 ELF_BIN_NAME=${APP_BASENAME}.elf
@@ -14,6 +13,37 @@ ELF_BIN_NAME=$(realpath $ELF_BIN_NAME)
 JELF_BIN_NAME=$(realpath $JELF_BIN_NAME)
 JELF_BIN_COMPRESSED_NAME=$(realpath $JELF_BIN_COMPRESSED_NAME)
 ELF2JELF=$(realpath $ELF2JELF)
+
+# OS specific configurations
+#if [[ "$OSTYPE" == "linux-gnu" ]]; then
+#    # ...
+#    echo "linux-gnu detected."
+#    OBJCOPY=objcopy
+#elif [[ "$OSTYPE" == "darwin"* ]]; then
+#    # Mac OSX
+#    echo "MacOS detected."
+#    OBJCOPY=gobjcopy
+#elif [[ "$OSTYPE" == "cygwin" ]]; then
+#    # POSIX compatibility layer and Linux environment emulation for Windows
+#    echo "cygwin detected."
+#    exit 1
+#elif [[ "$OSTYPE" == "msys" ]]; then
+#    # Lightweight shell and GNU utilities compiled for Windows (part of MinGW)
+#    echo "msys detected."
+#    exit 1
+#elif [[ "$OSTYPE" == "win32" ]]; then
+#    # I'm not sure this can happen.
+#    echo "win32 detected."
+#    exit 1
+#elif [[ "$OSTYPE" == "freebsd"* ]]; then
+#    # ...
+#    echo "freeBSD detected."
+#    exit 1
+#else
+#    # Unknown.
+#    echo "Error detecting operating system."
+#    exit 1
+#fi
 
 printf "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
 
@@ -48,18 +78,16 @@ else
 fi
 
 # Remove unneccessary sections
-if $STRIP; then
-    gobjcopy --remove-section=.comment \
-             --remove-section=.xtensa.info \
-             --remove-section=.xt.prop \
-             --remove-section=.rela.xt.prop \
-             --remove-section=.xt.lit \
-             --remove-section=.rela.xt.lit \
-             --remove-section=.data \
-             --remove-section=.bss \
-             --remove-section=.text \
-             $ELF_BIN_NAME
-fi
+xtensa-esp32-elf-objcopy --remove-section=.comment \
+         --remove-section=.xtensa.info \
+         --remove-section=.xt.prop \
+         --remove-section=.rela.xt.prop \
+         --remove-section=.xt.lit \
+         --remove-section=.rela.xt.lit \
+         --remove-section=.data \
+         --remove-section=.bss \
+         --remove-section=.text \
+         $ELF_BIN_NAME
 
 #######################
 # Convert ELF to JELF #
@@ -69,6 +97,7 @@ if $PYTHONBIN $ELF2JELF  "$ELF_BIN_NAME" \
     --output "$JELF_BIN_NAME" \
     --coin "$COIN_PATH" \
     --bip32key "$BIP32_KEY" \
+    --verbose DEBUG \
     ;
 then
     echo "Successfully converted ELF to JELF"

@@ -55,6 +55,6 @@ static lv_res_t menu_nano_select_account_cb( lv_obj_t *btn ) {
 }
 
 lv_res_t menu_nano_select_account( lv_obj_t *btn ) {
-    vault_refresh(NULL, menu_nano_select_account_cb);
+    vault_refresh(NULL, menu_nano_select_account_cb, NULL);
     return LV_RES_OK;
 }
