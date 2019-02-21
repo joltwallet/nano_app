@@ -1,3 +1,4 @@
+#!/bin/bash -e
 # App Specific Parameters
 APP_BASENAME=Nano
 COIN_PATH="44'/165'"
@@ -14,38 +15,32 @@ JELF_BIN_NAME=$(realpath $JELF_BIN_NAME)
 JELF_BIN_COMPRESSED_NAME=$(realpath $JELF_BIN_COMPRESSED_NAME)
 ELF2JELF=$(realpath $ELF2JELF)
 
-# OS specific configurations
-#if [[ "$OSTYPE" == "linux-gnu" ]]; then
-#    # ...
-#    echo "linux-gnu detected."
-#    OBJCOPY=objcopy
-#elif [[ "$OSTYPE" == "darwin"* ]]; then
-#    # Mac OSX
-#    echo "MacOS detected."
-#    OBJCOPY=gobjcopy
-#elif [[ "$OSTYPE" == "cygwin" ]]; then
-#    # POSIX compatibility layer and Linux environment emulation for Windows
-#    echo "cygwin detected."
-#    exit 1
-#elif [[ "$OSTYPE" == "msys" ]]; then
-#    # Lightweight shell and GNU utilities compiled for Windows (part of MinGW)
-#    echo "msys detected."
-#    exit 1
-#elif [[ "$OSTYPE" == "win32" ]]; then
-#    # I'm not sure this can happen.
-#    echo "win32 detected."
-#    exit 1
-#elif [[ "$OSTYPE" == "freebsd"* ]]; then
-#    # ...
-#    echo "freeBSD detected."
-#    exit 1
-#else
-#    # Unknown.
-#    echo "Error detecting operating system."
-#    exit 1
-#fi
-
+# Put some space on the console for easier debugging
 printf "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
+
+# OS specific configurations
+if [[ "$OSTYPE" == "linux-gnu" ]]; then
+    # ...
+    echo "linux-gnu detected."
+elif [[ "$OSTYPE" == "darwin"* ]]; then
+    # Mac OSX
+    echo "MacOS detected."
+elif [[ "$OSTYPE" == "cygwin" ]]; then
+    # POSIX compatibility layer and Linux environment emulation for Windows
+    echo "cygwin detected."
+elif [[ "$OSTYPE" == "msys" ]]; then
+    # Lightweight shell and GNU utilities compiled for Windows (part of MinGW)
+    echo "msys detected."
+elif [[ "$OSTYPE" == "win32" ]]; then
+    # I'm not sure this can happen.
+    echo "win32 detected."
+elif [[ "$OSTYPE" == "freebsd"* ]]; then
+    # ...
+    echo "freeBSD detected."
+else
+    # Unknown.
+    echo "Error detecting operating system."
+fi
 
 if [ -f ${ELF_BIN_NAME} ] ; then
     rm ${ELF_BIN_NAME}
@@ -97,7 +92,6 @@ if $PYTHONBIN $ELF2JELF  "$ELF_BIN_NAME" \
     --output "$JELF_BIN_NAME" \
     --coin "$COIN_PATH" \
     --bip32key "$BIP32_KEY" \
-    --verbose DEBUG \
     ;
 then
     echo "Successfully converted ELF to JELF"
