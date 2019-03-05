@@ -13,8 +13,7 @@ int app_main(int argc, char **argv) {
     jolt_gui_scr_menu_add(menu, NULL, "Send (contact)", NULL);
     jolt_gui_scr_menu_add(menu, NULL, "Block Count", menu_nano_block_count);
     jolt_gui_scr_menu_add(menu, NULL, "Select Account", menu_nano_select_account);
-    jolt_gui_scr_menu_add(menu, NULL, "Address (text)", menu_nano_address_text);
-    jolt_gui_scr_menu_add(menu, NULL, "Address (QR)", menu_nano_address_qr);
+    jolt_gui_scr_menu_add(menu, NULL, "Address", menu_nano_address);
 
     /* Always return the pointer to the main app menu */
     return menu;

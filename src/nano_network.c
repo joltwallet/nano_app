@@ -59,8 +59,9 @@ typedef struct {
     s->param = param;
 
 #define CMD_POSTAMBLE( x ) \
+    esp_err_t err = jolt_network_post( rpc_command, x, s, NULL ); \
     free( rpc_command ); \
-    return jolt_network_post( rpc_command, x, s, NULL );
+    return err;
     
 
 /* Last part of any internal cb. Free the response, call the cb, then return */

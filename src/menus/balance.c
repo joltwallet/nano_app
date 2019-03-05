@@ -34,8 +34,8 @@ static void frontier_cb( nl_block_t *block, void *param ) {
 }
 
 lv_res_t menu_nano_balance_cb( lv_obj_t *dummy ) {
-    lv_obj_t *scr = jolt_gui_scr_loading_create(TITLE);
-    jolt_gui_scr_loading_update(scr, NULL, "Getting Frontier", 50);
+    lv_obj_t *scr = jolt_gui_scr_loadingbar_create(TITLE);
+    jolt_gui_scr_loadingbar_update(scr, NULL, "Getting Frontier", 50);
 
     char address[ADDRESS_BUF_LEN];
     nano_get_address( address );

@@ -10,8 +10,7 @@
 #include "sdkconfig.h"
 
 lv_res_t menu_nano_block_count(lv_obj_t *btn);
-lv_res_t menu_nano_address_qr(lv_obj_t *btn);
-lv_res_t menu_nano_address_text(lv_obj_t *btn);
+lv_res_t menu_nano_address(lv_obj_t *btn);
 lv_res_t menu_nano_select_account(lv_obj_t *btn);
 lv_res_t menu_nano_balance(lv_obj_t *btn);
 lv_res_t menu_nano_receive(lv_obj_t *btn);
