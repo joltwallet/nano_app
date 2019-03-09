@@ -79,8 +79,6 @@ xtensa-esp32-elf-objcopy --remove-section=.comment \
          --remove-section=.rela.xt.prop \
          --remove-section=.xt.lit \
          --remove-section=.rela.xt.lit \
-         --remove-section=.data \
-         --remove-section=.bss \
          --remove-section=.text \
          $ELF_BIN_NAME
 

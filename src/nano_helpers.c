@@ -40,7 +40,6 @@ bool nano_index_get_private(uint256_t private_key, const uint32_t index) {
 bool nano_index_get_private_public(uint256_t private_key, uint256_t public_key, const uint32_t index) {
     /* Populates private_key/public_key at given index.
      * Will not copy to NULL pointers */
-    bool res;
     CONFIDENTIAL uint256_t private_key_local;
     if( private_key || public_key ) {
         if( !nano_index_get_private(private_key_local, index) ) {

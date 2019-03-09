@@ -5,7 +5,7 @@
 #include "menus/submenus.h"
 //#include "nano_console.h"
 
-int app_main(int argc, char **argv) {
+lv_obj_t *app_main(int argc, char **argv) {
     const char title[] = "Nano";
     lv_obj_t *menu = jolt_gui_scr_menu_create(title);
     jolt_gui_scr_menu_add(menu, NULL, "Balance", menu_nano_balance);

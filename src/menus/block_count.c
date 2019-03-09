@@ -12,8 +12,7 @@
 static const char TAG[] = "nano_block_count";
 static const char TITLE[] = "Block Count";
 
-static void network_cb( uint32_t count, void *param ) {
-    lv_obj_t *scr = param;
+static void network_cb( uint32_t count, void *param, lv_obj_t *scr ) {
     /* Delete the preloading screen */
     jolt_gui_obj_del( scr );
 
@@ -30,6 +29,6 @@ lv_res_t menu_nano_block_count(lv_obj_t *btn) {
         /* Failed to create screen, return early */
         return LV_RES_OK;
     }
-    nano_network_block_count(network_cb, scr);
+    nano_network_block_count(network_cb, NULL, scr);
     return LV_RES_OK;
 }

@@ -14,9 +14,7 @@
 static const char TAG[] = "nano_balance";
 static const char TITLE[] = "Nano Balance";
 
-static void frontier_cb( nl_block_t *block, void *param ) {
-    lv_obj_t *scr = param;
-
+static void frontier_cb( nl_block_t *block, void *param, lv_obj_t *scr ) {
     uint256_t my_public_key;
     nano_get_public(my_public_key);
     //assert( 0 == memcmp(my_public_key, block->account, sizeof(uint32_t) ));
@@ -33,14 +31,12 @@ static void frontier_cb( nl_block_t *block, void *param ) {
     jolt_gui_scr_text_create(TITLE, buf);
 }
 
-lv_res_t menu_nano_balance_cb( lv_obj_t *dummy ) {
-    lv_obj_t *scr = jolt_gui_scr_loadingbar_create(TITLE);
-    jolt_gui_scr_loadingbar_update(scr, NULL, "Getting Frontier", 50);
+void menu_nano_balance_cb( void *dummy ) {
+    lv_obj_t *scr = jolt_gui_scr_preloading_create(TITLE, "Contacting Server");
 
     char address[ADDRESS_BUF_LEN];
     nano_get_address( address );
-    nano_network_frontier_block( address, frontier_cb, scr );
-    return LV_RES_OK;
+    nano_network_frontier_block( address, frontier_cb, NULL, scr );
 }
 
 lv_res_t menu_nano_balance( lv_obj_t *btn ) {

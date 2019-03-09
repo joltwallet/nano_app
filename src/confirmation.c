@@ -3,11 +3,6 @@
  https://www.joltwallet.com/
  */
 
-/* IMPORTANT: Expects to be called from OUTSIDE the lvgl event loop. This 
- *            function BLOCKS while waiting for user input.
- */
-
-
 #include "jolt_lib.h"
 #include "nano_lib.h"
 #include "esp_log.h"
@@ -18,6 +13,8 @@ static const char *TAG = "nano_conf";
 
 #define STR_IMPL_(x) #x      //stringify argument
 #define STR(x) STR_IMPL_(x)  //indirection to expand argument macros
+
+static const char *title = "Confirm";
 
 #if 0
 bool nano_confirm_contact_update(const menu8g2_t *prev_menu, const char *name,
@@ -50,48 +47,89 @@ bool nano_confirm_contact_update(const menu8g2_t *prev_menu, const char *name,
 }
 #endif
 
+typedef struct confirm_obj_t{
+    nl_block_t *head_block;
+    nl_block_t *new_block;
+    confirm_cb_t cb;
+    void *param;
+    double display_amount;
+    bool is_send;
+} confirm_obj_t;
 
-
-
-static SemaphoreHandle_t user_input_complete = NULL;
-static bool nano_confirm_action_response = false;
-
-static lv_action_t nano_confirm_action_back_cb( lv_obj_t *btn ) {
-    // No gui semaphores needed since callbacks are executed in the lvgl event loop
+static lv_res_t user_cancel( lv_obj_t *btn ) {
+    confirm_obj_t *obj = jolt_gui_get_param( btn );
     jolt_gui_scr_del();
-    nano_confirm_action_response = false;
-    xSemaphoreGive(user_input_complete);
+    if( NULL != obj->cb ) {
+        obj->cb(false, obj->param);
+    }
+    free(obj);
     return LV_RES_INV;
 }
 
-static lv_action_t nano_confirm_action_enter_cb( lv_obj_t *btn ) {
-    // No gui semaphores needed since callbacks are executed in the lvgl event loop
+static void send_cb( confirm_obj_t *obj ) {
+    if( NULL != obj->cb ) {
+        obj->cb(true, obj->param);
+    }
+    free(obj);
+}
+
+static lv_res_t send_cb_helper( lv_obj_t *btn ) {
+    confirm_obj_t *obj = jolt_gui_get_param( btn );
     jolt_gui_scr_del();
-    nano_confirm_action_response = true;
-    xSemaphoreGive(user_input_complete);
+    send_cb( obj );
     return LV_RES_INV;
 }
 
-static bool nano_confirm_action(const char *title, const char *text) {
-    /*
-     */
-    if( NULL == user_input_complete ) {
-        user_input_complete = xSemaphoreCreateBinary();
+
+static void rep_change_cb( confirm_obj_t *obj ) {
+    if( obj->is_send ){
+        ESP_LOGI(TAG, "Detected Send");
+        char address[ADDRESS_BUF_LEN];
+        char buf[200];
+        /* Translate Destination Address */
+        if(E_SUCCESS != nl_public_to_address(address, sizeof(address), obj->new_block->link)){
+            goto exit;
+        }
+
+        snprintf(buf, sizeof(buf), 
+                "Send %."STR(CONFIG_JOLT_NANO_CONFIRM_DECIMALS)"lf NANO to %s ?",
+                obj->display_amount, address);
+
+        lv_obj_t *scr = jolt_gui_scr_text_create(title, buf);
+        jolt_gui_scr_set_back_action(scr, user_cancel);
+        jolt_gui_scr_set_enter_action(scr, send_cb_helper);
+        jolt_gui_scr_set_back_param(scr, obj);
+        jolt_gui_scr_set_enter_param(scr, obj);
+    }
+    else {
+        ESP_LOGI(TAG, "Detected Receive");
+        /* Auto Receive */
+        if( NULL != obj->cb ) {
+            obj->cb(true, obj->param);
+        }
+        free(obj);
     }
 
-    jolt_gui_sem_take();
-    lv_obj_t *scr = jolt_gui_scr_text_create(title, text);
-    jolt_gui_scr_set_back_action(scr, nano_confirm_action_back_cb);
-    jolt_gui_scr_set_enter_action(scr, nano_confirm_action_enter_cb);
-    jolt_gui_sem_give();
+    return;
 
-	// Block waiting for user response
-    xSemaphoreTake( user_input_complete, portMAX_DELAY );
-
-    return nano_confirm_action_response;
+exit:
+    if( NULL != obj->cb ) {
+        obj->cb(false, obj->param);
+    }
+    if( NULL != obj ) {
+        free(obj);
+    }
 }
 
-bool nano_confirm_block(nl_block_t *head_block, nl_block_t *new_block) {
+
+static lv_res_t rep_change_cb_helper( lv_obj_t *btn ) {
+    confirm_obj_t *obj = jolt_gui_get_param( btn );
+    jolt_gui_scr_del();
+    rep_change_cb( obj );
+    return LV_RES_INV;
+}
+
+void nano_confirm_block(nl_block_t *head_block, nl_block_t *new_block, confirm_cb_t cb, void *param) {
     /* IMPORTANT: Expects to be called from OUTSIDE the lvgl event loop. This 
      * function BLOCKS while waiting for user input.
      *
@@ -102,14 +140,21 @@ bool nano_confirm_block(nl_block_t *head_block, nl_block_t *new_block) {
      * Expects State Blocks 
      * Returns true on affirmation, false on error or cancellation.
      * */
+    confirm_obj_t *obj = NULL;
 
-    bool result = false;
-    double display_amount;
-    const char *title = "Confirm";
-
+    obj = malloc(sizeof(confirm_obj_t));
+    if( NULL == obj ) {
+        ESP_LOGE(TAG, "Failed to allocate space for confirm_obj_t");
+        goto exit;
+    }
+    obj->head_block = head_block;
+    obj->new_block = new_block;
+    obj->cb = cb;
+    obj->param = param;
+    obj->is_send = false;
 
     if(head_block->type == STATE) {
-        // Make sure the new_block's prev is the head_block
+        /* Make sure the new_block's prev is the head_block */
         {
             uint256_t head_block_hash;
             nl_block_compute_hash(head_block, head_block_hash);
@@ -118,7 +163,7 @@ bool nano_confirm_block(nl_block_t *head_block, nl_block_t *new_block) {
             }
         }
 
-        // Reject Invalid negative balances
+        /* Reject Invalid negative balances */
         if(-1 == new_block->balance.s || -1 == head_block->balance.s){
             goto exit;
         }
@@ -129,8 +174,11 @@ bool nano_confirm_block(nl_block_t *head_block, nl_block_t *new_block) {
         {
             mbedtls_mpi transaction_amount;
             mbedtls_mpi_init(&transaction_amount);
-            mbedtls_mpi_sub_mpi(&transaction_amount, &(head_block->balance), &(new_block->balance));
-            if( E_SUCCESS != nl_mpi_to_nano_double(&transaction_amount, &display_amount) ){
+            mbedtls_mpi_sub_mpi(&transaction_amount, &(new_block->balance), &(head_block->balance));
+            if( -1 == transaction_amount.s ) {
+                obj->is_send = true;
+            }
+            if( E_SUCCESS != nl_mpi_to_nano_double(&transaction_amount, &obj->display_amount) ){
                 mbedtls_mpi_free(&transaction_amount);
                 goto exit;
             }
@@ -147,35 +195,14 @@ bool nano_confirm_block(nl_block_t *head_block, nl_block_t *new_block) {
                 goto exit;
             }
             snprintf(buf, sizeof(buf), "Change Rep to %s ?", address);
-            if( nano_confirm_action(title, buf) ){
-                result = true;
-            }
-            else{
-                goto exit;
-            }
+            lv_obj_t *scr = jolt_gui_scr_text_create(title, buf);
+            jolt_gui_scr_set_back_action(scr, user_cancel);
+            jolt_gui_scr_set_enter_action(scr, rep_change_cb_helper);
+            jolt_gui_scr_set_back_param(scr, obj);
+            jolt_gui_scr_set_enter_param(scr, obj);
         }
-        if( display_amount > 0){
-            ESP_LOGI(TAG, "Detected Send");
-            /* Translate Destination Address */
-            if(E_SUCCESS != nl_public_to_address(address, sizeof(address),
-                    new_block->link)){
-                goto exit;
-            }
-
-            snprintf(buf, sizeof(buf), 
-                    "Send %."STR(CONFIG_JOLT_NANO_CONFIRM_DECIMALS)"lf NANO to %s ?",
-                    display_amount, address);
-            if( nano_confirm_action(title, buf) ){
-                result = true;
-            }
-            else{
-                goto exit;
-            }
-        }
-        if( display_amount < 0){
-            ESP_LOGI(TAG, "Detected Receive");
-            // Auto Receive
-            result = true;
+        else {
+            rep_change_cb( obj );
         }
     }
     else if(head_block->type == UNDEFINED){
@@ -186,12 +213,24 @@ bool nano_confirm_block(nl_block_t *head_block, nl_block_t *new_block) {
                 goto exit;
             }
         }
-        result = true;
+        /* No confirmation necessary for an Open Block */
+        if( NULL != cb ) {
+            cb(true, param);
+        }
     }
     else{
         ESP_LOGI(TAG, "Cannot verify with Legacy Block");
+        if( NULL != cb ) {
+            cb(false, param);
+        }
     }
 
+    return;
 exit:
-    return result;
+    if( NULL != obj ) {
+        free(obj);
+    }
+    if( NULL != cb ) {
+        cb(false, param);
+    }
 }

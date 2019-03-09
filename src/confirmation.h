@@ -7,8 +7,11 @@
 #define __JOLT_NANO_CONFIRMATION_H__
 
 #include "nano_lib.h"
+#include "jolt_lib.h"
 
-bool nano_confirm_block(nl_block_t *head_block, nl_block_t *new_block);
+typedef void (*confirm_cb_t)( bool confirm, void *param );
+
+void nano_confirm_block(nl_block_t *head_block, nl_block_t *new_block, confirm_cb_t cb, void *param);
 
 #if 0
 bool nano_confirm_contact_update(const menu8g2_t *prev_menu, const char *name,

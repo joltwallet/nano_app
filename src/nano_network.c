@@ -28,6 +28,7 @@ typedef struct {
     void *mem; \
     mem = malloc( size ); \
     if( NULL == mem ) { \
+        ESP_LOGE(TAG, "Failed to malloc"); \
         goto exit; \
     } \
     mem; \
@@ -59,7 +60,7 @@ typedef struct {
     s->param = param;
 
 #define CMD_POSTAMBLE( x ) \
-    esp_err_t err = jolt_network_post( rpc_command, x, s, NULL ); \
+    esp_err_t err = jolt_network_post( rpc_command, x, s, scr ); \
     free( rpc_command ); \
     return err;
     
@@ -68,7 +69,7 @@ typedef struct {
 #define CALL_CB( ... ) \
     FREE_IF_NOT_NULL( response ); \
     if( NULL != cb ) { \
-        cb(__VA_ARGS__, p); \
+        cb(__VA_ARGS__, p, scr); \
     } \
     return;
 
@@ -82,7 +83,7 @@ typedef struct {
         goto exit; \
     }
 
-static void nano_network_block_count_cb(int16_t status_code, char *response, void *param) {
+static void nano_network_block_count_cb(int16_t status_code, char *response, void *param, lv_obj_t *scr) {
     uint32_t block_count = 0;
     CB_PREAMBLE( nano_network_block_count_cb_t );
     printf("%s\n", response);
@@ -91,15 +92,15 @@ static void nano_network_block_count_cb(int16_t status_code, char *response, voi
 exit:
     CALL_CB( 0 );
 }
-esp_err_t nano_network_block_count(nano_network_block_count_cb_t cb, void *param) {
+esp_err_t nano_network_block_count(nano_network_block_count_cb_t cb, void *param, lv_obj_t *scr) {
     CMD_PREAMBLE;
     snprintf( rpc_command, NANOPARSE_CMD_BUF_LEN,
             "{\"action\":\"block_count\"}" );
-    CMD_POSTAMBLE(nano_network_block_count_cb);
+    CMD_POSTAMBLE( nano_network_block_count_cb );
 }
 
 
-static void nano_network_work_cb(int16_t status_code, char *response, void *param) {
+static void nano_network_work_cb(int16_t status_code, char *response, void *param, lv_obj_t *scr) {
     uint64_t work = 0;
     CB_PREAMBLE( nano_network_work_cb_t );
     nanoparse_work(response, &work);
@@ -107,7 +108,7 @@ static void nano_network_work_cb(int16_t status_code, char *response, void *para
 exit:
     CALL_CB( 0 ); // technically 0 is a valid value, but there's no real consequence.
 }
-esp_err_t nano_network_work( const hex256_t hash, nano_network_work_cb_t cb, void *param ){
+esp_err_t nano_network_work( const hex256_t hash, nano_network_work_cb_t cb, void *param, lv_obj_t *scr ){
     CMD_PREAMBLE;
     hex256_t hash_upper;
     strlcpy( hash_upper, hash, sizeof(hash_upper) );
@@ -119,9 +120,9 @@ esp_err_t nano_network_work( const hex256_t hash, nano_network_work_cb_t cb, voi
 }
 
 
-static void nano_network_account_frontier_cb(int16_t status_code, char *response, void *param) {
+static void nano_network_frontier_hash_cb(int16_t status_code, char *response, void *param, lv_obj_t *scr) {
     char *frontier_block_hash = NULL;
-    CB_PREAMBLE( nano_network_account_frontier_cb_t );
+    CB_PREAMBLE( nano_network_frontier_hash_cb_t );
     frontier_block_hash = MALLOC( sizeof(hex256_t) );
     JOLT_ERR_CHECK( nanoparse_account_frontier(response, frontier_block_hash) );
     CALL_CB( frontier_block_hash );
@@ -129,16 +130,16 @@ exit:
     FREE_IF_NOT_NULL( frontier_block_hash );
     CALL_CB( NULL );
 }
-esp_err_t nano_network_account_frontier( const char *account_address, nano_network_account_frontier_cb_t cb, void *param ){
+esp_err_t nano_network_frontier_hash( const char *account_address, nano_network_frontier_hash_cb_t cb, void *param, lv_obj_t *scr ){
     CMD_PREAMBLE;
     snprintf( (char *) rpc_command, NANOPARSE_CMD_BUF_LEN,
             "{\"action\":\"accounts_frontiers\",\"accounts\":[\"%s\"]}",
             account_address);
-    CMD_POSTAMBLE( nano_network_account_frontier_cb );
+    CMD_POSTAMBLE( nano_network_frontier_hash_cb );
 }
 
 
-static void nano_network_block_cb(int16_t status_code, char *response, void *param) {
+static void nano_network_block_cb(int16_t status_code, char *response, void *param, lv_obj_t *scr) {
     nl_block_t *block = NULL;
     CB_PREAMBLE( nano_network_block_cb_t );
     block = MALLOC( sizeof(nl_block_t) );
@@ -147,9 +148,9 @@ static void nano_network_block_cb(int16_t status_code, char *response, void *par
     CALL_CB( block );
 exit:
     FREE_IF_NOT_NULL( block );
-    CALL_CB( block );
+    CALL_CB( NULL );
 }
-esp_err_t nano_network_block( const hex256_t block_hash, nano_network_block_cb_t cb, void *param ){
+esp_err_t nano_network_block( const hex256_t block_hash, nano_network_block_cb_t cb, void *param, lv_obj_t *scr ){
     CMD_PREAMBLE;
     snprintf( (char *) rpc_command, NANOPARSE_CMD_BUF_LEN,
              "{\"action\":\"block\",\"hash\":\"%s\"}",
@@ -158,7 +159,7 @@ esp_err_t nano_network_block( const hex256_t block_hash, nano_network_block_cb_t
 }
 
 
-static void nano_network_pending_hash_cb(int16_t status_code, char *response, void *param) {
+static void nano_network_pending_hash_cb(int16_t status_code, char *response, void *param, lv_obj_t *scr) {
     char *pending_block_hash = NULL;
     mbedtls_mpi *amount = NULL;
     CB_PREAMBLE( nano_network_pending_hash_cb_t );
@@ -168,7 +169,15 @@ static void nano_network_pending_hash_cb(int16_t status_code, char *response, vo
     amount = MALLOC( sizeof(mbedtls_mpi) );
     mbedtls_mpi_init(amount);
 
-    JOLT_ERR_CHECK( nanoparse_pending_hash(response, pending_block_hash, amount) );
+    switch( nanoparse_pending_hash(response, pending_block_hash, amount) ) {
+        case E_SUCCESS:
+            break;
+        default:
+            /* No pending blocks found */
+            free(amount);
+            amount = NULL;
+            break;
+    }
 
     CALL_CB( pending_block_hash, amount );
 exit:
@@ -176,7 +185,7 @@ exit:
     FREE_IF_NOT_NULL( amount );
     CALL_CB( NULL, NULL );
 }
-esp_err_t nano_network_pending_hash( const char *account_address, nano_network_pending_hash_cb_t cb, void *param ){
+esp_err_t nano_network_pending_hash( const char *account_address, nano_network_pending_hash_cb_t cb, void *param, lv_obj_t *scr ){
     CMD_PREAMBLE;
     snprintf( (char *) rpc_command, NANOPARSE_CMD_BUF_LEN,
              "{\"action\":\"accounts_pending\","
@@ -188,25 +197,24 @@ esp_err_t nano_network_pending_hash( const char *account_address, nano_network_p
 }
 
 
-static void nano_network_frontier_block_cb(hex256_t frontier_block_hash, void *param) {
+static void nano_network_frontier_block_cb(hex256_t frontier_block_hash, void *param, lv_obj_t *scr) {
     /* Once the block comes back, directly call the user callback, providing 
      * user parameters */
     cb_struct_t *s = (cb_struct_t *)param;
     nano_network_frontier_block_cb_t cb = (nano_network_frontier_block_cb_t)(s->cb);
     void *p = s->param;
     free( s );
-    nano_network_block( frontier_block_hash, cb, p );
+    if( NULL == frontier_block_hash ) {
+        if(NULL != cb) {
+            cb(NULL, p, scr);
+        }
+    }
+    else{
+        nano_network_block( frontier_block_hash, cb, p, scr );
+    }
     FREE_IF_NOT_NULL( frontier_block_hash );
 }
-esp_err_t nano_network_frontier_block( const char *address, nano_network_frontier_block_cb_t cb, void *param ){
-    /* Convenience function to get frontier hash and block contents.
-     * Fills in block's field according to account in block->account.
-     *
-     * General Steps:
-     *     1) Get Frontier Block Hash
-     *     2) Query that hash
-     *     3) Call the User cb
-     */
+esp_err_t nano_network_frontier_block( const char *address, nano_network_frontier_block_cb_t cb, void *param, lv_obj_t *scr ){
 
     /* 1) Get Frontier Block Hash */
     cb_struct_t *s;
@@ -217,17 +225,19 @@ esp_err_t nano_network_frontier_block( const char *address, nano_network_frontie
     s->cb = cb;
     s->param = param;
 
-    return nano_network_account_frontier( address,
-            nano_network_frontier_block_cb, s );
+    return nano_network_frontier_hash( address,
+            nano_network_frontier_block_cb, s, scr );
 }
 
-static void nano_network_process_cb(int16_t status_code, char *response, void *param) {
+static void nano_network_process_cb(int16_t status_code, char *response, void *param, lv_obj_t *scr) {
     CB_PREAMBLE( nano_network_process_cb_t );
-    /* Todo: check response data */
+    /* Todo: check response data to verify success.
+     * Modify status_code accordingly
+     */
 exit:
-    CALL_CB( status_code );
+    CALL_CB( ESP_OK );
 }
-esp_err_t nano_network_process( const nl_block_t *block, nano_network_process_cb_t cb, void *param) {
+esp_err_t nano_network_process( const nl_block_t *block, nano_network_process_cb_t cb, void *param, lv_obj_t *scr) {
     CMD_PREAMBLE;
     nanoparse_process(block, rpc_command, NANOPARSE_CMD_BUF_LEN);
     CMD_POSTAMBLE( nano_network_process_cb );
