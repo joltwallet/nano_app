@@ -59,12 +59,22 @@ static int console(int argc, char **argv) {
     };
     subconsole_cmd_register(subconsole, &cmd);
 
+    /* Commands shouldn't rely on WiFi networking; this command is just an example */
     cmd = (esp_console_cmd_t) {
         .command = "count",
         .help = "Get the current Nano block count",
         .func = &nano_count,
     };
     subconsole_cmd_register(subconsole, &cmd);
+
+    cmd = (esp_console_cmd_t) {
+        .command = "address",
+        .help = "Get the Nano Address at derivation index or index range",
+        .hint = NULL,
+        .func = &nano_address,
+    };
+    subconsole_cmd_register(subconsole, &cmd);
+
 #if 0
     cmd = (esp_console_cmd_t) {
         .command = "balance",
@@ -74,13 +84,6 @@ static int console(int argc, char **argv) {
     };
     ESP_ERROR_CHECK( esp_console_cmd_register(&cmd) );
 
-    cmd = (esp_console_cmd_t) {
-        .command = "address",
-        .help = "Get the Nano Address at derivation index or index range",
-        .hint = NULL,
-        .func = &nano_address,
-    };
-    ESP_ERROR_CHECK( esp_console_cmd_register(&cmd) );
 
     cmd = (esp_console_cmd_t) {
         .command = "sign_block",

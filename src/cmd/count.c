@@ -12,7 +12,6 @@ static void network_cb( uint32_t count, void *param, lv_obj_t *scr ) {
     }
 }
 
-
 int nano_count(int argc, char**argv) {
     nano_network_block_count(network_cb, NULL, NULL);
     return JOLT_CONSOLE_NON_BLOCKING;
