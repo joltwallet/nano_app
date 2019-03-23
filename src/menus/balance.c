@@ -15,19 +15,27 @@ static const char TAG[] = "nano_balance";
 static const char TITLE[] = "Nano Balance";
 
 static void frontier_cb( nl_block_t *block, void *param, lv_obj_t *scr ) {
-    uint256_t my_public_key;
-    nano_get_public(my_public_key);
-    //assert( 0 == memcmp(my_public_key, block->account, sizeof(uint32_t) ));
+    {
+        uint256_t my_public_key;
+        nano_get_public(my_public_key);
+        //assert( 0 == memcmp(my_public_key, block->account, sizeof(uint32_t) ));
+    }
+
+    lv_obj_del(scr);
+    if(NULL == block) {
+        jolt_gui_scr_text_create(TITLE, "Unable to get account info.");
+        return;
+    }
 
     double display_amount;
     if( E_SUCCESS != nl_mpi_to_nano_double(&(block->balance), &display_amount) ){
+        // todo: error
     }
     ESP_LOGI(TAG, "Approximate Account Balance: %0.3lf", display_amount);
 
     char buf[100];
     snprintf(buf, sizeof(buf), "%0.3lf Nano", display_amount);
 
-    lv_obj_del(scr);
     jolt_gui_scr_text_create(TITLE, buf);
 }
 

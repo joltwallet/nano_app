@@ -17,9 +17,14 @@ static void network_cb( uint32_t count, void *param, lv_obj_t *scr ) {
     jolt_gui_obj_del( scr );
 
     /* Create the text screen */
-    char block_count[20];
-    snprintf(block_count, sizeof(block_count), "%d", count);
-    jolt_gui_scr_text_create(TITLE, block_count);
+    if( count > 0) {
+        char block_count[30];
+        snprintf(block_count, sizeof(block_count), "Blocks: %d", count);
+        jolt_gui_scr_text_create(TITLE, block_count);
+    }
+    else{
+        jolt_gui_scr_text_create(TITLE, "Unable to get block count.");
+    }
 }
 
 lv_res_t menu_nano_block_count(lv_obj_t *btn) {

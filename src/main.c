@@ -1,52 +1,36 @@
 #include <stddef.h>
-#include "sodium.h"
+#include "jolt_lib.h"
+//#include "sodium.h"
 
-#include "jolt_gui/jolt_gui.h"
+//#include "jolt_gui/jolt_gui.h"
 #include "menus/submenus.h"
 //#include "nano_console.h"
+#include "cmd/cmds.h"
 
-lv_obj_t *app_main(int argc, char **argv) {
-    const char title[] = "Nano";
-    lv_obj_t *menu = jolt_gui_scr_menu_create(title);
-    jolt_gui_scr_menu_add(menu, NULL, "Balance", menu_nano_balance);
-    jolt_gui_scr_menu_add(menu, NULL, "Receive", menu_nano_receive);
-    jolt_gui_scr_menu_add(menu, NULL, "Send (contact)", NULL);
-    jolt_gui_scr_menu_add(menu, NULL, "Block Count", menu_nano_block_count);
-    jolt_gui_scr_menu_add(menu, NULL, "Select Account", menu_nano_select_account);
-    jolt_gui_scr_menu_add(menu, NULL, "Address", menu_nano_address);
-
-    /* Always return the pointer to the main app menu */
-    return menu;
-}
-
-#if 0
-int console(int argc, char **argv);
+static const char TAG[] = "nano_main";
+static int console(int argc, char **argv);
 
 int app_main(int argc, char **argv) {
-    /* Entry point for primary Jolt GUI */
-    menu8g2_t nano_menu;
-    menu8g2_copy(&nano_menu, menu);
-
-    const char title[] = "Nano";
-
-    menu8g2_elements_t elements;
-    menu8g2_elements_init(&elements, 7);
-    menu8g2_set_element(&elements, "Balance", &menu_nano_balance);
-    menu8g2_set_element(&elements, "Receive", &menu_nano_receive);
-    menu8g2_set_element(&elements, "Send (contact)", &menu_nano_send_contact);
-    menu8g2_set_element(&elements, "Block Count", &menu_nano_block_count);
-    menu8g2_set_element(&elements, "Select Account", &menu_nano_select_account);
-    menu8g2_set_element(&elements, "Address (text)", &menu_nano_address_text);
-    menu8g2_set_element(&elements, "Address (QR)", &menu_nano_address_qr);
-    menu8g2_create_vertical_element_menu(&nano_menu, title, &elements);
-    menu8g2_elements_free(&elements);
-
-    return 0;
+    ESP_LOGI(TAG, "argc: %d", argc);
+    lv_obj_t *menu = NULL;
+    if( 0 == argc)  {
+        const char title[] = "Nano";
+        menu = jolt_gui_scr_menu_create(title);
+        jolt_gui_scr_menu_add(menu, NULL, "Balance", menu_nano_balance);
+        jolt_gui_scr_menu_add(menu, NULL, "Receive", menu_nano_receive);
+        jolt_gui_scr_menu_add(menu, NULL, "Send (contact)", NULL);
+        jolt_gui_scr_menu_add(menu, NULL, "Block Count", menu_nano_block_count);
+        jolt_gui_scr_menu_add(menu, NULL, "Select Account", menu_nano_select_account);
+        jolt_gui_scr_menu_add(menu, NULL, "Address", menu_nano_address);
+        jolt_gui_scr_menu_add(menu, NULL, "About", NULL);
+        return (int)menu;
+    }
+    else {
+        return console(argc, argv);
+    }
 }
 
-#if CONFIG_JOLT_NANO_CONSOLE_ENABLE
-#include "console.h"
-#if 0
+
 static int meow(int argc, char **argv) {
     printf("meowmeowmeowmeow\n");
     return 0;
@@ -55,13 +39,12 @@ static int doge(int argc, char **argv) {
     printf("dogedogedoge\n");
     return 0;
 }
-#endif
-int console(int argc, char **argv) {
+
+static int console(int argc, char **argv) {
     /* Entry point for console commands */
     esp_console_cmd_t cmd;
     subconsole_t *subconsole = subconsole_cmd_init();
-    console_nano_register(subconsole);
-#if 0
+    //console_nano_register(subconsole);
     cmd = (esp_console_cmd_t) {
         .command = "meow",
         .help = "Get the current Nano block count",
@@ -75,19 +58,14 @@ int console(int argc, char **argv) {
         .func = &doge,
     };
     subconsole_cmd_register(subconsole, &cmd);
-#endif
 
-    subconsole_cmd_run(subconsole, argc, argv);
-    subconsole_cmd_free(subconsole);
-
-#if 0
     cmd = (esp_console_cmd_t) {
         .command = "count",
         .help = "Get the current Nano block count",
         .func = &nano_count,
     };
-    ESP_ERROR_CHECK( esp_console_cmd_register(&cmd) );
-
+    subconsole_cmd_register(subconsole, &cmd);
+#if 0
     cmd = (esp_console_cmd_t) {
         .command = "balance",
         .help = "Get the current Nano Balance",
@@ -127,10 +105,6 @@ int console(int argc, char **argv) {
         .hint = NULL,
         .func = &nano_contact_update,
     };
-
-
-
-
     cmd = (esp_console_cmd_t) {
         .command = "free",
         .help = "Get the total size of heap memory available",
@@ -142,7 +116,13 @@ int console(int argc, char **argv) {
     }
     printf("First Passed in argument was %s.\n", argv[0]);
 #endif
-    return 0;
+
+    ESP_LOGD(TAG, "Running %s", argv[0]);
+    int res = subconsole_cmd_run(subconsole, argc, argv);
+
+    ESP_LOGD(TAG, "Freeing subconsole");
+    subconsole_cmd_free(subconsole);
+
+    ESP_LOGD(TAG, "App exiting with code %d", res);
+    return res;
 }
-#endif
-#endif
