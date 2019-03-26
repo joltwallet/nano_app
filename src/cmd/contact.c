@@ -8,7 +8,6 @@ static const char TITLE[] = "Contacts";
 static const char confirmation_add_str[]    = "Add contact:\nName: %s\nAddress:";
 static const char confirmation_update_str[] = "Update contact %d to:\nName: %s\nAddress:";
 
-#define MAX_NAME_LEN 32
 
 static cJSON *json = NULL;
 static cJSON *contacts = NULL;
@@ -49,7 +48,7 @@ static lv_res_t confirmation_cb_yes( lv_obj_t *obj ) {
 }
 
 static int confirmation_create() {
-    char buf[strlen(confirmation_update_str) + MAX_NAME_LEN + 1];
+    char buf[strlen(confirmation_update_str) + MAX_CONTACT_NAME_LEN + 1];
     /* Verify it's a valid address */
     {
         uint256_t pub_key;
@@ -89,9 +88,7 @@ int nano_cmd_contact(int argc, char**argv) {
 
     json = nano_get_json();
     contacts = cJSON_GetObjectItemCaseSensitive(json, "contacts");
-    if( NULL == contacts ) {
-        ESP_LOGE(TAG, "Contacts key doesn't exist.");
-    }
+    int n_contacts = cJSON_GetArraySize(contacts);
 
 
     /* More specific argument verification */
@@ -105,11 +102,14 @@ int nano_cmd_contact(int argc, char**argv) {
         if( !console_check_equal_argc(argc, 4) ) {
             return 1;
         }
+        if( n_contacts >= MAX_CONTACT_LEN) {
+            return 1;
+        }
         idx = -1;
         name = argv[2];
         address = argv[3];
 
-        if( strlen(name) > MAX_NAME_LEN ) {
+        if( strlen(name) > MAX_CONTACT_NAME_LEN ) {
             printf("Too long name.\n");
             return 1;
         }
@@ -117,6 +117,9 @@ int nano_cmd_contact(int argc, char**argv) {
         return confirmation_create();
     }
     else if( 0 == strcmp(argv[1], "insert") ) {
+        if( n_contacts >= MAX_CONTACT_LEN) {
+            return 1;
+        }
         printf("not yet implemented\n");
     }
     else if( 0 == strcmp(argv[1], "update") ) {

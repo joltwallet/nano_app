@@ -3,34 +3,43 @@
 #include <string.h>
 #include "nano_lib.h"
 #include "jolt_lib.h"
-
-#define HARDEN 0x80000000
+#include "nano_helpers.h"
 
 static const char TAG[] = "nano_helpers";
 
 /**
- * @brief Ensure all the fields are present in the json configh
+ * @brief Ensure all the fields are present in the json config.
  */
-static void verify_json() {
-}
-
-cJSON *nano_get_json() {
-#define EXIT_IF_NULL(x) if( NULL == x ) goto exit;
-    cJSON *json = jolt_json_read_app();
+static cJSON *verify_json( cJSON *json ) {
+#define EXIT_IF_NULL(x) save = true; if( NULL == x ) goto exit;
+    bool save = false;
     if( NULL == json ) {
         /* Create Default JSON */
         json = cJSON_CreateObject();
-        EXIT_IF_NULL( cJSON_AddNumberToObject(json, "index", 0) );
-        EXIT_IF_NULL( cJSON_AddArrayToObject(json, "contacts") );
+    }
 
+    if( NULL == cJSON_Get(json, "index") ) {
+        ESP_LOGW(TAG, "key %s not found", "index");
+        EXIT_IF_NULL(cJSON_AddNumberToObject(json, "index", 0) );
+    }
+    if( NULL == cJSON_Get(json, "contacts") ) {
+        ESP_LOGW(TAG, "key %s not found", "index");
+        EXIT_IF_NULL( cJSON_AddArrayToObject(json, "contacts") );
+    }
+    if( save ) {
         jolt_json_write_app( json );
     }
     return json;
-
 exit:
+    assert( false ); // force a reboot
     jolt_json_del(json);
     return NULL;
 #undef EXIT_IF_NULL
+}
+
+cJSON *nano_get_json() {
+    cJSON *json = jolt_json_read_app();
+    return verify_json(json);
 }
 
 uint32_t nano_index_get() {

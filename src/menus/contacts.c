@@ -24,13 +24,11 @@ static lv_res_t contact_cb(lv_obj_t *btn) {
 }
 
 lv_res_t menu_nano_contacts( lv_obj_t *btn ) {
-    //vault_refresh(NULL, menu_nano_balance_cb, NULL);
-
     /* Read Config */
     lv_obj_t *menu = NULL;
     cJSON *contact = NULL;
     cJSON *json = nano_get_json();
-    cJSON *contacts = cJSON_GetObjectItemCaseSensitive(json, "contacts");
+    cJSON *contacts = cJSON_Get(json, "contacts");
 
     int n_contacts = cJSON_GetArraySize(contacts);
 
@@ -38,9 +36,16 @@ lv_res_t menu_nano_contacts( lv_obj_t *btn ) {
         jolt_gui_scr_text_create(TITLE, "No Contacts");
         goto exit;
     }
+
+    ESP_LOGD(TAG, "Creating contacts menu");
     menu = jolt_gui_scr_menu_create(TITLE);
+
+    ESP_LOGD(TAG, "Iterating through saved contacts");
     cJSON_ArrayForEach(contact, contacts){
-        jolt_gui_scr_menu_add(menu, NULL, cJSON_GetStringValue(contact), contact_cb);
+        cJSON *elem;
+        elem = cJSON_Get(contact, "name");
+        ESP_LOGD(TAG, "Adding contact list element-name \"%s\"", cJSON_GetStringValue(elem));
+        jolt_gui_scr_menu_add(menu, NULL, cJSON_GetStringValue(elem), contact_cb);
     }
 
 exit:
