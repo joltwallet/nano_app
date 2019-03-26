@@ -19,7 +19,7 @@ void failure_cb( void *param ) {
 }
 
 
-int nano_address(int argc, char ** argv){
+int nano_cmd_address(int argc, char ** argv){
 
     /* Argument Verification */
     if( !console_check_range_argc(argc, 1, 3) ){

@@ -1,10 +1,7 @@
 #include <stddef.h>
 #include "jolt_lib.h"
-//#include "sodium.h"
 
-//#include "jolt_gui/jolt_gui.h"
 #include "menus/submenus.h"
-//#include "nano_console.h"
 #include "cmd/cmds.h"
 
 static const char TAG[] = "nano_main";
@@ -18,7 +15,7 @@ int app_main(int argc, char **argv) {
         menu = jolt_gui_scr_menu_create(title);
         jolt_gui_scr_menu_add(menu, NULL, "Balance", menu_nano_balance);
         jolt_gui_scr_menu_add(menu, NULL, "Receive", menu_nano_receive);
-        jolt_gui_scr_menu_add(menu, NULL, "Send (contact)", NULL);
+        jolt_gui_scr_menu_add(menu, NULL, "Send (contact)", menu_nano_contacts);
         jolt_gui_scr_menu_add(menu, NULL, "Block Count", menu_nano_block_count);
         jolt_gui_scr_menu_add(menu, NULL, "Select Account", menu_nano_select_account);
         jolt_gui_scr_menu_add(menu, NULL, "Address", menu_nano_address);
@@ -30,40 +27,16 @@ int app_main(int argc, char **argv) {
     }
 }
 
-
-static int meow(int argc, char **argv) {
-    printf("meowmeowmeowmeow\n");
-    return 0;
-}
-static int doge(int argc, char **argv) {
-    printf("dogedogedoge\n");
-    return 0;
-}
-
 static int console(int argc, char **argv) {
     /* Entry point for console commands */
     esp_console_cmd_t cmd;
     subconsole_t *subconsole = subconsole_cmd_init();
-    //console_nano_register(subconsole);
-    cmd = (esp_console_cmd_t) {
-        .command = "meow",
-        .help = "Get the current Nano block count",
-        .func = &meow,
-    };
-    subconsole_cmd_register(subconsole, &cmd);
-
-    cmd = (esp_console_cmd_t) {
-        .command = "doge",
-        .help = "Such wow",
-        .func = &doge,
-    };
-    subconsole_cmd_register(subconsole, &cmd);
 
     /* Commands shouldn't rely on WiFi networking; this command is just an example */
     cmd = (esp_console_cmd_t) {
         .command = "count",
         .help = "Get the current Nano block count",
-        .func = &nano_count,
+        .func = &nano_cmd_count,
     };
     subconsole_cmd_register(subconsole, &cmd);
 
@@ -71,7 +44,15 @@ static int console(int argc, char **argv) {
         .command = "address",
         .help = "Get the Nano Address at derivation index or index range",
         .hint = NULL,
-        .func = &nano_address,
+        .func = &nano_cmd_address,
+    };
+    subconsole_cmd_register(subconsole, &cmd);
+
+    cmd = (esp_console_cmd_t) {
+        .command = "contact",
+        .help = "Update Nano Contact (index, name, address)",
+        .hint = NULL,
+        .func = &nano_cmd_contact,
     };
     subconsole_cmd_register(subconsole, &cmd);
 

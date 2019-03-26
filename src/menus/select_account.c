@@ -22,14 +22,15 @@ static lv_res_t menu_nano_select_account_index_cb( lv_obj_t *btn_sel ) {
     else {
         ESP_LOGE(TAG, "Selected button not found in list");
     }
-    return LV_RES_OK;
+    jolt_gui_scr_del();
+    return LV_RES_INV;
 }
 
 static lv_res_t menu_nano_select_account_cb( lv_obj_t *btn ) {
     const char title[] = "Nano";
 
     uint32_t index = nano_index_get();
-    ESP_LOGD(TAG, "Current Nano Address Derivation Index: %d", index);
+    ESP_LOGI(TAG, "Current Nano Address Derivation Index: %d", index);
 
     lv_obj_t *menu = jolt_gui_scr_menu_create(title);
     lv_obj_t *sel = NULL;

@@ -6,14 +6,69 @@
 
 #define HARDEN 0x80000000
 
+static const char TAG[] = "nano_helpers";
+
+/**
+ * @brief Ensure all the fields are present in the json configh
+ */
+static void verify_json() {
+}
+
+cJSON *nano_get_json() {
+#define EXIT_IF_NULL(x) if( NULL == x ) goto exit;
+    cJSON *json = jolt_json_read_app();
+    if( NULL == json ) {
+        /* Create Default JSON */
+        json = cJSON_CreateObject();
+        EXIT_IF_NULL( cJSON_AddNumberToObject(json, "index", 0) );
+        EXIT_IF_NULL( cJSON_AddArrayToObject(json, "contacts") );
+
+        jolt_json_write_app( json );
+    }
+    return json;
+
+exit:
+    jolt_json_del(json);
+    return NULL;
+#undef EXIT_IF_NULL
+}
+
 uint32_t nano_index_get() {
-    uint32_t index;
-    storage_get_u32(&index, "nano", "index", 0);
+    uint32_t index=0;
+    cJSON *json;
+    cJSON *obj;
+
+    json = nano_get_json();
+    obj = cJSON_GetObjectItemCaseSensitive(json, "index");
+    if( NULL == obj ) {
+        ESP_LOGW(TAG, "\"index\" key doesn't exist");
+        return 0;
+    }
+    else {
+        index = obj->valuedouble;
+    }
+    cJSON_Delete( json );
+
     return index;
 }
 
 bool nano_index_set(uint32_t index) {
-    return storage_set_u32(index, "nano", "index");
+    cJSON *json;
+    cJSON *obj;
+
+    json = nano_get_json();
+    obj = cJSON_GetObjectItemCaseSensitive(json, "index");
+    if( NULL == obj ) {
+        ESP_LOGW(TAG, "\"index\" key doesn't exist");
+    }
+    else {
+        cJSON_SetNumberValue(obj, index);
+    }
+
+    jolt_json_write_app(json);
+    cJSON_Delete( json );
+
+    return true;
 }
 
 /* Assumes thaat the vault has been externally refreshed */

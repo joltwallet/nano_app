@@ -3,6 +3,9 @@
 
 #include <stdbool.h>
 #include "jolttypes.h"
+#include "cJSON.h"
+
+cJSON *nano_get_json();
 
 uint32_t nano_index_get();
 bool nano_index_set(uint32_t index);

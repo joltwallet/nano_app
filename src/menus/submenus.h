@@ -11,12 +11,9 @@
 
 lv_res_t menu_nano_block_count(lv_obj_t *btn);
 lv_res_t menu_nano_address(lv_obj_t *btn);
+lv_res_t menu_nano_contacts(lv_obj_t *btn);
 lv_res_t menu_nano_select_account(lv_obj_t *btn);
 lv_res_t menu_nano_balance(lv_obj_t *btn);
 lv_res_t menu_nano_receive(lv_obj_t *btn);
-
-#if 0
-void menu_nano_send_contact(menu8g2_t *prev);
-#endif
 
 #endif
