@@ -17,7 +17,7 @@ config JOLT_NANO_CONTACTS_MAX
 config JOLT_NANO_CONTACTS_NAME_LEN
     int
     prompt "Maximum length of Nano contact alias"
-    default 18
+    default 32
     help
         Maximum number of characters (including null-term) to store for a
         Nano contact alias

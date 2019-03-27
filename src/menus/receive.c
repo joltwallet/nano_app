@@ -139,7 +139,6 @@ static void step2(hex256_t pending_block_hash, mbedtls_mpi *amount, void *param,
      * Get My Account's Frontier Block *
      ***********************************/
     jolt_gui_scr_loadingbar_update(d->scr, NULL, "Checking Account", 20);
-    memcpy(d->frontier_block.account, d->my_public_key, sizeof(uint256_t));
     nano_network_frontier_block( d->my_address, step3, d, d->scr );
     return;
 
@@ -162,6 +161,10 @@ static void step3( nl_block_t *frontier_block, void *param, lv_obj_t *scr ){
     if( NULL == frontier_block) {
         ESP_LOGI(TAG, "No frontier block found. Assuming Open");
         d->open = true;
+    }
+    else {
+        memcpy(&d->frontier_block, frontier_block, sizeof(nl_block_t));
+        free(frontier_block);
     }
     jolt_gui_scr_loadingbar_update(d->scr, NULL, "Creating Block", 30);
 

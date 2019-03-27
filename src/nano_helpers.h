@@ -5,8 +5,6 @@
 #include "jolttypes.h"
 #include "cJSON.h"
 
-#define MAX_CONTACT_NAME_LEN 32 /**< Maximum Contact Name length */
-#define MAX_CONTACT_LEN 10      /**< Maximum number of contacts */
 #define HARDEN 0x80000000
 #define cJSON_Get cJSON_GetObjectItemCaseSensitive
 

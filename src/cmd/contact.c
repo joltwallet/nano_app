@@ -26,7 +26,6 @@ static void cleanup(int return_code) {
 }
 
 static lv_res_t confirmation_cb_no( lv_obj_t *btn_sel ) {
-    //int32_t index = lv_list_get_btn_index(NULL, btn_sel);
     jolt_gui_scr_del();
     cleanup(-1);
     return LV_RES_INV;
@@ -48,7 +47,7 @@ static lv_res_t confirmation_cb_yes( lv_obj_t *obj ) {
 }
 
 static int confirmation_create() {
-    char buf[strlen(confirmation_update_str) + MAX_CONTACT_NAME_LEN + 1];
+    char buf[strlen(confirmation_update_str) + CONFIG_JOLT_NANO_CONTACTS_NAME_LEN + 1];
     /* Verify it's a valid address */
     {
         uint256_t pub_key;
@@ -102,14 +101,14 @@ int nano_cmd_contact(int argc, char**argv) {
         if( !console_check_equal_argc(argc, 4) ) {
             return 1;
         }
-        if( n_contacts >= MAX_CONTACT_LEN) {
+        if( n_contacts >= CONFIG_JOLT_NANO_CONTACTS_MAX) {
             return 1;
         }
         idx = -1;
         name = argv[2];
         address = argv[3];
 
-        if( strlen(name) > MAX_CONTACT_NAME_LEN ) {
+        if( strlen(name) > CONFIG_JOLT_NANO_CONTACTS_NAME_LEN ) {
             printf("Too long name.\n");
             return 1;
         }
@@ -117,7 +116,7 @@ int nano_cmd_contact(int argc, char**argv) {
         return confirmation_create();
     }
     else if( 0 == strcmp(argv[1], "insert") ) {
-        if( n_contacts >= MAX_CONTACT_LEN) {
+        if( n_contacts >= CONFIG_JOLT_NANO_CONTACTS_MAX) {
             return 1;
         }
         printf("not yet implemented\n");
