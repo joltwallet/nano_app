@@ -33,16 +33,24 @@ typedef void (*nano_network_process_cb_t)( esp_err_t status, void *param, lv_obj
 esp_err_t nano_network_block_count(nano_network_block_count_cb_t cb, void *param, lv_obj_t *scr);
 
 /**
- * @brief Request the Server for work on a given hash.
+ * @brief Request the Server for work on a given hash (hex).
  *
  * Will populate a "0" work nonce for the callback on failure. 
  * Technically, 0 could be a valid PoW, but we will use it as an error value.
  *
- * @param[in] hash Hash to compute Proof of Work for
+ * @param[in] hash Hash in ascii hex to compute Proof of Work for
  * @param[in] cb Callback to be executed afterwards
  * @param[in] param Pointer to be passed to callback
  */
 esp_err_t nano_network_work( const hex256_t hash, nano_network_work_cb_t cb, void *param, lv_obj_t *scr );
+
+/**
+ * @brief Request the Server for work on a given hash (binary).
+ * @param[in] hash Hash in ascii hex to compute Proof of Work for
+ * @param[in] cb Callback to be executed afterwards
+ * @param[in] param Pointer to be passed to callback
+ */
+esp_err_t nano_network_work_bin( const uint256_t hash_bin, nano_network_work_cb_t cb, void *param, lv_obj_t *scr );
 
 /**
  * @brief Get the head block hash for some Nano account.

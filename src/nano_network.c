@@ -13,6 +13,7 @@
 #include "jolt_lib.h"
 #include "nano_parse.h"
 #include "nano_network.h"
+#include <byteswap.h>
 
 #define NANOPARSE_CMD_BUF_LEN 1024
 
@@ -104,6 +105,7 @@ static void nano_network_work_cb(int16_t status_code, char *response, void *para
     uint64_t work = 0;
     CB_PREAMBLE( nano_network_work_cb_t );
     nanoparse_work(response, &work);
+    //work = __bswap_64(work);
     CALL_CB( work );
 exit:
     CALL_CB( 0 ); // technically 0 is a valid value, but there's no real consequence.
@@ -117,6 +119,12 @@ esp_err_t nano_network_work( const hex256_t hash, nano_network_work_cb_t cb, voi
             "{\"action\":\"work_generate\",\"hash\":\"%s\"}",
             hash_upper );
     CMD_POSTAMBLE( nano_network_work_cb );
+}
+
+esp_err_t nano_network_work_bin( const uint256_t hash_bin, nano_network_work_cb_t cb, void *param, lv_obj_t *scr ){
+    hex256_t buf_hex;
+    sodium_bin2hex(buf_hex, sizeof(buf_hex), hash_bin, sizeof(uint256_t));
+    return nano_network_work(buf_hex, cb, param, scr);
 }
 
 
@@ -234,6 +242,7 @@ static void nano_network_process_cb(int16_t status_code, char *response, void *p
     /* Todo: check response data to verify success.
      * Modify status_code accordingly
      */
+    ESP_LOGD(TAG, "Process response: %s", response);
 exit:
     CALL_CB( ESP_OK );
 }

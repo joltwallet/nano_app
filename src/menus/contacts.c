@@ -99,6 +99,7 @@ static lv_res_t processing_cb_1( lv_obj_t *num_scr ){
     /* Parse JSON data for this contact */
     send_obj_t *d;
 
+    ESP_LOGD(TAG, "Allocating space for send context");
     d = malloc(sizeof(send_obj_t));
     if( NULL == d ){
         ESP_LOGE(TAG, "Could not allocate memory for send_obj_t");
@@ -201,6 +202,7 @@ static void processing_cb_3( nl_block_t *frontier_block, void *param, lv_obj_t *
     /*****************
      * Check Balance *
      *****************/
+    ESP_LOGD(TAG, "Verifying sufficient balance");
     if (mbedtls_mpi_cmp_mpi(&d->frontier_block.balance, &d->transaction_amount) == -1) {
         ESP_LOGI(TAG, "Insufficent Funds.");
         goto exit;
@@ -218,6 +220,7 @@ static void processing_cb_3( nl_block_t *frontier_block, void *param, lv_obj_t *
     /******************************
      * Create confirmation screen *
      ******************************/
+    ESP_LOGD(TAG, "Requesting user to confirm transaction");
     nano_confirm_block(&d->frontier_block, &d->send_block, processing_cb_4, d);
 
 exit:
@@ -238,7 +241,7 @@ static void processing_cb_4( bool confirm, void *param ) {
     /* Get PoW */
     ESP_LOGD(TAG, "Fetching PoW");
     jolt_gui_scr_loadingbar_update(d->scr, NULL, "Fetching PoW", 60);
-    nano_network_work( &d->send_block.previous, processing_cb_5, d, &d->scr );
+    nano_network_work_bin( &d->send_block.previous, processing_cb_5, d, d->scr );
 
     return;
 exit:
@@ -254,6 +257,8 @@ static void processing_cb_5( uint64_t work, void *param, lv_obj_t *scr ){
     if( 0 == work ) {
         goto exit;
     }
+    d->send_block.work = work;
+
     /* Sign Send Block */
     ESP_LOGI(TAG, "Signing Block");
     jolt_gui_scr_loadingbar_update(d->scr, NULL, "Signing", 70);
@@ -336,8 +341,12 @@ static lv_res_t contact_cb( lv_obj_t *btn_sel ) {
     lv_obj_t *scr = NULL;
     idx = lv_list_get_btn_index(NULL, btn_sel);
 
+    ESP_LOGD(TAG, "Creating Digit Entry Screen");
     scr = jolt_gui_scr_digit_entry_create(TITLE_SEND,
         CONFIG_JOLT_NANO_SEND_DIGITS, CONFIG_JOLT_NANO_SEND_DECIMALS);
+    if( NULL == scr ) {
+        ESP_LOGE(TAG, "Failed to create digit entry screen");
+    }
     jolt_gui_scr_set_enter_action(scr, processing_cb_1);
 
     return LV_RES_OK;

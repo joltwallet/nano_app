@@ -93,7 +93,7 @@ static void rep_change_cb( confirm_obj_t *obj ) {
 
         snprintf(buf, sizeof(buf), 
                 "Send %."STR(CONFIG_JOLT_NANO_CONFIRM_DECIMALS)"lf NANO to %s ?",
-                obj->display_amount, address);
+                -obj->display_amount, address);
 
         lv_obj_t *scr = jolt_gui_scr_text_create(title, buf);
         jolt_gui_scr_set_back_action(scr, user_cancel);
