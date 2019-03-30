@@ -26,9 +26,9 @@ static lv_res_t processing_cb_1( lv_obj_t *dummy );
 static void processing_cb_2( void *param );
 static void processing_cb_3( nl_block_t *block, void *param, lv_obj_t *scr );
 static void processing_cb_4( bool confirm, void *param );
-static void processing_cb_4_1( void *param );
-static void processing_cb_5( uint64_t work, void *param, lv_obj_t *scr );
-static void processing_cb_6( esp_err_t status, void *param, lv_obj_t *scr);
+static void processing_cb_5( void *param );
+static void processing_cb_6( uint64_t work, void *param, lv_obj_t *scr );
+static void processing_cb_7( esp_err_t status, void *param, lv_obj_t *scr);
 
 typedef struct {
     struct{
@@ -276,12 +276,12 @@ static void processing_cb_4( bool confirm, void *param ) {
     }
 
     /* Refresh vault to get private key */
-    vault_refresh(cleanup_complete, processing_cb_4_1, NULL);
+    vault_refresh(cleanup_complete, processing_cb_5, NULL);
 
     return;
 }
 
-static void processing_cb_4_1( void *param ){
+static void processing_cb_5( void *param ){
     /* Generate Signature */
 
     /* Sign Send Block */
@@ -306,7 +306,7 @@ static void processing_cb_4_1( void *param ){
     /* Get PoW */
     ESP_LOGD(TAG, "Fetching PoW");
     jolt_gui_scr_loadingbar_update(d->scr.progress, NULL, "Fetching PoW", 60);
-    nano_network_work_bin( d->block.send.previous, processing_cb_5, d, d->scr.progress );
+    nano_network_work_bin( d->block.send.previous, processing_cb_6, d, d->scr.progress );
 
     return;
 exit:
@@ -317,7 +317,7 @@ exit:
 /**
  * @brief Broadcast
  */
-static void processing_cb_5( uint64_t work, void *param, lv_obj_t *scr ){
+static void processing_cb_6( uint64_t work, void *param, lv_obj_t *scr ){
     send_obj_t *d = param;
 
     if( 0 == work ) {
@@ -330,11 +330,11 @@ static void processing_cb_5( uint64_t work, void *param, lv_obj_t *scr ){
     /* Broadcast signed block */
     ESP_LOGI(TAG, "Broadcasting Block");
     jolt_gui_scr_loadingbar_update(d->scr.progress, NULL, "Broadcasting", 100);
-    nano_network_process( &d->block.send, processing_cb_6, NULL, NULL); // Cannot reliably cancel at this stage.
+    nano_network_process( &d->block.send, processing_cb_7, NULL, NULL); // Cannot reliably cancel at this stage.
     return;
 }
 
-static void processing_cb_6( esp_err_t status, void *param, lv_obj_t *scr){
+static void processing_cb_7( esp_err_t status, void *param, lv_obj_t *scr){
     if( ESP_OK == status ) {
         jolt_gui_scr_text_create(TITLE_SEND, "Transaction Complete");
     }
