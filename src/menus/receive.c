@@ -111,7 +111,6 @@ static void step2(hex256_t pending_block_hash, mbedtls_mpi *amount, void *param,
         /* No pending blocks */
         ESP_LOGI(TAG, "No pending blocks. %p %p", pending_block_hash, amount);
         jolt_gui_scr_text_create(TITLE, "No pending blocks found");
-        jolt_gui_obj_del(d->scr);
         goto exit;
     }
 
@@ -173,8 +172,11 @@ static void step3( nl_block_t *frontier_block, void *param, lv_obj_t *scr ){
      *****************************/
     d->receive_block.type = STATE;
     // Frontier Hash is all zero if its an open
-    sodium_hex2bin(d->receive_block.previous, sizeof(d->receive_block.previous),
+    nl_block_compute_hash(&d->frontier_block, d->receive_block.previous);
+#if 0
+    sodium_hex2bin(d->receive_block.previous, sizeof(uint256_t),
             d->frontier_hash, sizeof(hex256_t), NULL, NULL, NULL);
+#endif
     memcpy(d->receive_block.account, d->my_public_key, sizeof(d->my_public_key));
     nl_address_to_public(d->receive_block.representative, 
             CONFIG_JOLT_NANO_DEFAULT_REPRESENTATIVE);
@@ -233,7 +235,7 @@ static void step4( bool confirm, void *param) {
         nano_network_work( work_hex, step5, d, d->scr );
     }
     else{
-        nano_network_work( d->frontier_hash, step5, d, d->scr );
+        nano_network_work_bin( d->receive_block.previous, step5, d, d->scr );
     }
 
     return;

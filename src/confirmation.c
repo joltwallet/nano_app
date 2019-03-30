@@ -159,12 +159,14 @@ void nano_confirm_block(nl_block_t *head_block, nl_block_t *new_block, confirm_c
             uint256_t head_block_hash;
             nl_block_compute_hash(head_block, head_block_hash);
             if(0 != memcmp(head_block_hash, new_block->previous, BIN_256)){
+                ESP_LOGE(TAG, "frontier and new_block's previous mismatch");
                 goto exit;
             }
         }
 
         /* Reject Invalid negative balances */
         if(-1 == new_block->balance.s || -1 == head_block->balance.s){
+            ESP_LOGW(TAG, "Cannot have a block with negative balance");
             goto exit;
         }
 
