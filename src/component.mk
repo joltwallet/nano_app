@@ -1,2 +1,7 @@
 COMPONENT_SRCDIRS := . \
-	menus
+	menus \
+	cmd
+
+COMPONENT_ADD_INCLUDEDIRS := . \
+    cmd
+

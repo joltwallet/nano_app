@@ -3,34 +3,37 @@
  https://www.joltwallet.com/
  */
 
-#include "freertos/FreeRTOS.h"
-#include "freertos/queue.h"
-#include "freertos/task.h"
-
-#include "nano_parse.h"
-#include "menu8g2.h"
-
+#include "jolt_lib.h"
 #include "submenus.h"
-#include "globals.h"
-#include "gui/statusbar.h"
-#include "gui/gui.h"
+#include "nano_parse.h"
+#include "submenus.h"
+#include "../nano_network.h"
 
+static const char TAG[] = "nano_block_count";
 static const char TITLE[] = "Block Count";
 
+static void network_cb( uint32_t count, void *param, lv_obj_t *scr ) {
+    /* Delete the preloading screen */
+    jolt_gui_obj_del( scr );
 
-void menu_nano_block_count(menu8g2_t *prev){
-    char block_count[12];
-    sprintf(block_count, "%d", nanoparse_web_block_count());
-    menu8g2_t menu;
-    menu8g2_copy(&menu, prev);
-
-    for(;;){
-        if(menu8g2_display_text_title(&menu, block_count, TITLE) 
-                & (1ULL << EASY_INPUT_BACK)){
-            goto exit;
-        }
+    /* Create the text screen */
+    if( count > 0) {
+        char block_count[30];
+        snprintf(block_count, sizeof(block_count), "Blocks: %d", count);
+        jolt_gui_scr_text_create(TITLE, block_count);
     }
+    else{
+        jolt_gui_scr_text_create(TITLE, "Unable to get block count.");
+    }
+}
 
-    exit:
-        return;
+lv_res_t menu_nano_block_count(lv_obj_t *btn) {
+    lv_obj_t *scr;
+    scr = jolt_gui_scr_preloading_create(TITLE, "Connecting To Server");
+    if( NULL == scr ) {
+        /* Failed to create screen, return early */
+        return LV_RES_OK;
+    }
+    nano_network_block_count(network_cb, NULL, scr);
+    return LV_RES_OK;
 }

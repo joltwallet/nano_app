@@ -2,89 +2,52 @@
  Copyright (C) 2018  Brian Pugh, James Coxon, Michael Smaili
  https://www.joltwallet.com/
  */
-
-#include "esp_log.h"
-#include "freertos/FreeRTOS.h"
-#include "freertos/queue.h"
-#include "freertos/task.h"
-#include "menu8g2.h"
+#include "jolt_lib.h"
 #include "nano_lib.h"
-#include "nano_parse.h"
-#include "nano_rest.h"
-#include "sodium.h"
-#include <string.h>
-
-#include "globals.h"
-#include "gui/gui.h"
-#include "gui/loading.h"
-#include "vault.h"
-
+#include "esp_log.h"
 #include "../nano_helpers.h"
 #include "submenus.h"
+#include "nano_parse.h"
+#include "../nano_network.h"
+
 
 static const char TAG[] = "nano_balance";
 static const char TITLE[] = "Nano Balance";
 
+static void frontier_cb( nl_block_t *block, void *param, lv_obj_t *scr ) {
+    {
+        uint256_t my_public_key;
+        nano_get_public(my_public_key);
+        //assert( 0 == memcmp(my_public_key, block->account, sizeof(uint32_t) ));
+    }
 
-void menu_nano_balance(menu8g2_t *prev){
-    /*
-     * Blocks involved:
-     * frontier_block - frontier of our account chain
-     */
-    menu8g2_t menu_obj;
-    menu8g2_t *m = &menu_obj;
-    menu8g2_copy(m, prev);
+    lv_obj_del(scr);
+    if(NULL == block) {
+        jolt_gui_scr_text_create(TITLE, "Unable to get account info.");
+        return;
+    }
 
     double display_amount;
-
-    /*********************
-     * Get My Public Key *
-     *********************/
-    uint256_t my_public_key;
-    if( !nano_get_public(my_public_key) ) {
-        goto exit;
+    if( E_SUCCESS != nl_mpi_to_nano_double(&(block->balance), &display_amount) ){
+        // todo: error
     }
-
-    /********************************************
-     * Get My Account's Frontier Block *
-     ********************************************/
-    // Assumes State Blocks Only
-    // Outcome:
-    //     * frontier_hash, frontier_block
-    loading_enable();
-    loading_text_title("Getting Frontier", TITLE);
-
-    nl_block_t frontier_block;
-    nl_block_init(&frontier_block);
-    memcpy(frontier_block.account, my_public_key, sizeof(my_public_key));
-
-    switch( nanoparse_web_frontier_block(&frontier_block) ){
-        case E_SUCCESS:
-            ESP_LOGI(TAG, "Successfully fetched frontier block");
-            if( E_SUCCESS != nl_mpi_to_nano_double(&(frontier_block.balance),
-                        &display_amount) ){
-                goto exit;
-            }
-            ESP_LOGI(TAG, "Approximate Account Balance: %0.3lf", display_amount);
-            break;
-        default:
-            ESP_LOGI(TAG, "Failed to fetch frontier block (does it exist?)");
-            display_amount = 0;
-            break;
-    }
+    ESP_LOGI(TAG, "Approximate Account Balance: %0.3lf", display_amount);
 
     char buf[100];
     snprintf(buf, sizeof(buf), "%0.3lf Nano", display_amount);
 
-    loading_disable();
-    for(;;){
-        if(menu8g2_display_text_title(m, buf, TITLE)
-                & (1ULL << EASY_INPUT_BACK)){
-            goto exit;
-        }
-    }
+    jolt_gui_scr_text_create(TITLE, buf);
+}
 
-    exit:
-        loading_disable();
-        return;
+void menu_nano_balance_cb( void *dummy ) {
+    lv_obj_t *scr = jolt_gui_scr_preloading_create(TITLE, "Contacting Server");
+
+    char address[ADDRESS_BUF_LEN];
+    nano_get_address( address );
+    nano_network_frontier_block( address, frontier_cb, NULL, scr );
+}
+
+lv_res_t menu_nano_balance( lv_obj_t *btn ) {
+    vault_refresh(NULL, menu_nano_balance_cb, NULL);
+    return LV_RES_OK;
 }

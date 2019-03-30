@@ -6,13 +6,14 @@
 #ifndef __JOLT_NANO_SUBMENUS_H__
 #define __JOLT_NANO_SUBMENUS_H__
 
-//void menu_nano_settings(menu8g2_t *prev);
-void menu_nano_block_count(menu8g2_t *prev);
-void menu_nano_balance(menu8g2_t *prev);
-void menu_nano_address_text(menu8g2_t *prev);
-void menu_nano_address_qr(menu8g2_t *prev);
-void menu_nano_receive(menu8g2_t *prev);
-void menu_nano_send_contact(menu8g2_t *prev);
-void menu_nano_select_account(menu8g2_t *prev);
+#include "lvgl/lvgl.h"
+#include "sdkconfig.h"
+
+lv_res_t menu_nano_block_count(lv_obj_t *btn);
+lv_res_t menu_nano_address(lv_obj_t *btn);
+lv_res_t menu_nano_contacts(lv_obj_t *btn);
+lv_res_t menu_nano_select_account(lv_obj_t *btn);
+lv_res_t menu_nano_balance(lv_obj_t *btn);
+lv_res_t menu_nano_receive(lv_obj_t *btn);
 
 #endif

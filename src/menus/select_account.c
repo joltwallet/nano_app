@@ -2,52 +2,58 @@
  Copyright (C) 2018  Brian Pugh, James Coxon, Michael Smaili
  https://www.joltwallet.com/
  */
-
-#include "freertos/FreeRTOS.h"
-#include "freertos/queue.h"
-#include "freertos/task.h"
-#include "sodium.h"
-#include <string.h>
-#include "esp_log.h"
-
+#include "jolt_lib.h"
 #include "nano_lib.h"
-#include "menu8g2.h"
-#include "nano_parse.h"
-
-#include "submenus.h"
-#include "vault.h"
-#include "globals.h"
-#include "gui/gui.h"
-#include "gui/loading.h"
+#include "esp_log.h"
 #include "../nano_helpers.h"
+#include "submenus.h"
 
 static const char TAG[] = "nano_sel_acc";
 static const char TITLE[] = "Nano Account";
 
-
-static menu8g2_err_t get_nano_address(char buf[], size_t buf_len, const char *options[], const uint32_t index){
-    char address[ADDRESS_BUF_LEN];
-    if( !nano_index_get_address(address, index) ) {
-        strlcpy(buf, "ERROR", buf_len);
-        return MENU8G2_FAILURE;
+/* Stores the selected index to nano_index */
+static lv_res_t menu_nano_select_account_index_cb( lv_obj_t *btn_sel ) {
+    lv_obj_t *list = lv_obj_get_parent(lv_obj_get_parent( btn_sel ));
+    int32_t index = lv_list_get_btn_index(list, btn_sel);
+    if( index >= 0 ) {
+        ESP_LOGI(TAG, "Saving index %d", index);
+        nano_index_set(NULL, index);
     }
-    else{
-        snprintf(buf, buf_len, "%d. %s", index, address);
-        return MENU8G2_SUCCESS;
+    else {
+        ESP_LOGE(TAG, "Selected button not found in list");
     }
+    jolt_gui_scr_del();
+    return LV_RES_INV;
 }
 
-void menu_nano_select_account(menu8g2_t *prev){
-    menu8g2_t menu_obj;
-    menu8g2_t *m = & menu_obj;
-    menu8g2_copy(m, prev);
+static void menu_nano_select_account_cb( void *dummy ) {
+    const char title[] = "Nano";
 
-    vault_refresh();
-    m->index = nano_index_get();
+    uint32_t index = nano_index_get(NULL);
+    ESP_LOGI(TAG, "Current Nano Address Derivation Index: %d", index);
 
-    if(menu8g2_create_vertical_menu(m, TITLE, NULL,
-            (void *)&get_nano_address, UINT32_MAX)){
-        // Enter
-        nano_index_set(m->index);
+    lv_obj_t *menu = jolt_gui_scr_menu_create(title);
+    lv_obj_t *sel = NULL;
+
+    for(uint8_t i=0; i < 10; i++) {
+        char address[ADDRESS_BUF_LEN];
+        char buf[ADDRESS_BUF_LEN+16];
+        if( !nano_index_get_address(address, i) ) {
+            strlcpy(buf, "ERROR", sizeof(buf));
+        }
+        else {
+            snprintf(buf, sizeof(buf), "%d. %s", i+1, address);
+        }
+        lv_obj_t *btn = jolt_gui_scr_menu_add(menu, NULL, buf,
+                menu_nano_select_account_index_cb);
+        if( i == index || 0 == i ) {
+            sel = btn;
+        }
     }
+    jolt_gui_scr_menu_set_btn_selected(menu, sel);
+}
+
+lv_res_t menu_nano_select_account( lv_obj_t *btn ) {
+    vault_refresh(NULL, menu_nano_select_account_cb, NULL);
+    return LV_RES_OK;
 }
