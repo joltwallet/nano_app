@@ -21,32 +21,100 @@ static const char TAG[] = "nano_contacts";
 static const char TITLE[] = "Contacts";
 static const char TITLE_SEND[] = "Send";
 
-static cJSON *json = NULL;
-static cJSON *contacts = NULL;
-static int32_t idx;
-
-lv_obj_t *scr_contacts     = NULL; /**< Contacts list */
-lv_obj_t *scr_digit_entry  = NULL; /**< Screen to enter send amount */
-lv_obj_t *scr_confirmation = NULL; /**< Yes/No confirmation screen */
-lv_obj_t *scr_progress     = NULL; /**< Displays progress bar of processing transaction*/
-
 /* Static Function Declaration */
 static lv_res_t processing_cb_1( lv_obj_t *dummy );
 static void processing_cb_2( void *param );
 static void processing_cb_3( nl_block_t *block, void *param, lv_obj_t *scr );
 static void processing_cb_4( bool confirm, void *param );
+static void processing_cb_4_1( void *param );
 static void processing_cb_5( uint64_t work, void *param, lv_obj_t *scr );
 static void processing_cb_6( esp_err_t status, void *param, lv_obj_t *scr);
 
 typedef struct {
-    lv_obj_t *scr;             /**< loading/progress screen */
-    CONFIDENTIAL uint256_t my_private_key;
-    uint256_t my_public_key;
-    char my_address[ADDRESS_BUF_LEN];
-    nl_block_t frontier_block;
-    nl_block_t send_block;     /**< The block we want to sign in */
-    mbedtls_mpi transaction_amount;
+    struct{
+        lv_obj_t *contacts;                /**< Contacts list */
+        lv_obj_t *progress;                /**< Displays progress bar of processing transaction*/
+        lv_obj_t *entry;                   /**< Screen to enter send amount */
+        lv_obj_t *error;                   /**< DIsplay error */
+    } scr;
+
+    struct{
+        nl_block_t *frontier; /**< Account frontier; an account cannot send funds unless it has a frontier */
+        nl_block_t send;     /**< The block we want to sign in */
+    } block;
+
+    struct{
+        cJSON *root;        /**< Root JSON config node */
+        cJSON *contacts;    /**< Contacts array node */
+        uint32_t account_index; /**< Local account derivation index */
+    } cfg;
+
+    mbedtls_mpi transaction_amount;     /**< bignum to hold precise transaction amount */
+
+    int8_t contact_index;      /**< Selected contact index */
+
 } send_obj_t;
+
+static send_obj_t *d = NULL; /* Send Context */
+
+/* CLEANUP/BACK CALLBACKS */
+
+/**
+ * @brief cleanup the entire send context.
+ *
+ * Called upon exit, completion, OOM-errors, or corrupt data.
+ */
+static void cleanup_complete( void *param ) {
+    /* Screen cleanup */
+    if(d->scr.contacts) jolt_gui_obj_del(d->scr.contacts);
+    if(d->scr.progress) jolt_gui_obj_del(d->scr.progress);
+    if(d->scr.entry)    jolt_gui_obj_del(d->scr.entry);
+    if(d->scr.error)    jolt_gui_obj_del(d->scr.error);
+
+    /* Block Cleanup */
+    if(d->block.frontier) free(d->block.frontier);
+
+    /* Config JSON cleanup */
+    if(d->cfg.root) jolt_json_del(d->cfg.root);
+
+    /* BigNum Cleanup */
+    mbedtls_mpi_free(&d->transaction_amount);
+
+    /* Context Deletion */
+    free(d);
+    d = NULL;
+}
+
+/**
+ * @brief cleanup the entire send context.
+ *
+ * Called upon exit, completion, OOM-errors, or corrupt data.
+ */
+static lv_res_t cleanup_complete_cb( lv_obj_t *dummy ) {
+    cleanup_complete(NULL);
+
+    return LV_RES_INV;
+}
+
+static lv_res_t back_to_entry_cb( lv_obj_t *dummy ) {
+    /* Screen cleanup */
+    if(d->scr.progress) jolt_gui_obj_del(d->scr.progress);
+    d->scr.progress = NULL;
+    if(d->scr.error)    jolt_gui_obj_del(d->scr.error);
+    d->scr.error = NULL;
+
+    /* Set the first entry position to the one's place */
+    jolt_gui_scr_digit_entry_set_pos(d->scr.entry, CONFIG_JOLT_NANO_SEND_DECIMALS);
+
+    return LV_RES_INV;
+}
+
+static lv_res_t entry_back_cb(lv_obj_t *btn) {
+    jolt_gui_obj_del(d->scr.entry);
+    d->scr.entry = NULL;
+    return LV_RES_INV;
+}
+
 
 /**
  * @brief Convert the user-entered NANO value into raw bignum.
@@ -81,40 +149,13 @@ static void entry_to_mpi(lv_obj_t *num_scr, mbedtls_mpi *val ) {
 }
 
 /**
- * @brief De-allocate all the stuff 
- */
-static lv_res_t cleanup_cb( lv_obj_t *obj ) {
-    jolt_gui_obj_del(scr_contacts);
-    jolt_json_del(json);
-    json = NULL;
-    contacts = NULL;
-    idx = 0;
-    return LV_RES_INV;
-}
-
-/**
  * @brief Prompts for PIN to get account access
  */
 static lv_res_t processing_cb_1( lv_obj_t *num_scr ){
-    /* Parse JSON data for this contact */
-    send_obj_t *d;
-
-    ESP_LOGD(TAG, "Allocating space for send context");
-    d = malloc(sizeof(send_obj_t));
-    if( NULL == d ){
-        ESP_LOGE(TAG, "Could not allocate memory for send_obj_t");
-        goto exit;
-    }
-    memset(d, 0, sizeof(send_obj_t));
-    nl_block_init(&d->frontier_block);
-    nl_block_init(&d->send_block);
-    d->send_block.type = STATE;
-    mbedtls_mpi_init(&d->transaction_amount);
-
     /* populates dst_address */
     cJSON *contact, *json_address;
 
-    contact = cJSON_GetArrayItem(contacts, idx);
+    contact = cJSON_GetArrayItem(d->cfg.contacts, d->contact_index);
     if( NULL == contact ) {
         ESP_LOGE(TAG, "Index out of range");
         goto exit;
@@ -129,18 +170,19 @@ static lv_res_t processing_cb_1( lv_obj_t *num_scr ){
         }
         dst_address = cJSON_GetStringValue( json_address );
         ESP_LOGD(TAG, "Contact address: %s", dst_address);
-        nl_address_to_public(&d->send_block.link, dst_address);
+        nl_address_to_public(d->block.send.link, dst_address);
     }
 
     /* Populate transaction Amount. */
     entry_to_mpi(num_scr, &d->transaction_amount);
 
-    /* Prompt for pin */
-    vault_refresh(NULL, processing_cb_2, d); //todo failure cleanup
+    /* Prompt for pin to derive public address */
+    vault_refresh(NULL, processing_cb_2, NULL);
 
     return LV_RES_OK;
 
 exit:
+    cleanup_complete(NULL);
     return LV_RES_OK;
 }
 
@@ -149,37 +191,35 @@ exit:
  * @brief Creates loading screen, gets frontier
  */
 static void processing_cb_2( void *param ) {
-    send_obj_t *d = param;
+    char my_address[ADDRESS_BUF_LEN];
 
-    scr_progress = jolt_gui_scr_loadingbar_create( TITLE_SEND );
-    if( NULL == scr_progress) {
+    d->scr.progress = jolt_gui_scr_loadingbar_create( TITLE_SEND );
+    if( NULL == d->scr.progress) {
         ESP_LOGE(TAG, "Failed to allocate loadingbar screen");
         jolt_gui_scr_err_create(JOLT_GUI_ERR_OOM);
     }
-    d->scr = scr_progress;
-    jolt_gui_scr_loadingbar_update(d->scr, NULL, "Getting Frontier", 10);
+    jolt_gui_scr_loadingbar_update(d->scr.progress, NULL, "Getting Frontier", 10);
 
     /***********************************************
      * Get My Public Key, Private Key, and Address *
      ***********************************************/
-    if( !nano_get_private_public_address(d->my_private_key, d->send_block.account, d->my_address) ) {
+    if( !nano_index_get_private_public_address(NULL, d->block.send.account, my_address, d->cfg.account_index) ) {
         goto exit;
     }
-    ESP_LOGI(TAG, "My Address: %s\n", d->my_address);
+    ESP_LOGI(TAG, "My Address: %s\n", my_address);
 
-    nano_network_frontier_block( d->my_address, processing_cb_3, d, d->scr );
+    /* Fetch frontier block (if not already fetched) */
+    if( NULL == d->block.frontier ) {
+        nano_network_frontier_block( my_address, processing_cb_3, NULL, d->scr.progress );
+    }
+    else {
+        processing_cb_3( d->block.frontier, NULL, NULL );
+    }
 
     return;
+
 exit:
-#if 0
-    in_progress = false;
-    if( NULL != scr ) {
-        jolt_gui_obj_del(scr);
-    }
-    if( NULL != d ) {
-        free(d);
-    }
-#endif
+    cleanup_complete( NULL );
     return;
 }
 
@@ -187,199 +227,192 @@ exit:
  * @brief Craft send block
  */
 static void processing_cb_3( nl_block_t *frontier_block, void *param, lv_obj_t *scr ) {
-    send_obj_t *d = param;
 
     if( NULL == frontier_block ) {
         /* No frontier blocks */
         ESP_LOGI(TAG, "No frontier block.");
-        jolt_gui_scr_text_create(TITLE, "Account not found");
-        jolt_gui_obj_del(d->scr);
-        goto exit;
+        d->scr.error = jolt_gui_scr_text_create(TITLE, "Account not found");
+        jolt_gui_scr_set_back_action(d->scr.error, cleanup_complete_cb);
+        return;
     }
-    memcpy(&d->frontier_block, frontier_block, sizeof(nl_block_t));
-    free(frontier_block);
+
+    d->block.frontier = frontier_block;
 
     /*****************
      * Check Balance *
      *****************/
     ESP_LOGD(TAG, "Verifying sufficient balance");
-    if (mbedtls_mpi_cmp_mpi(&d->frontier_block.balance, &d->transaction_amount) == -1) {
-        ESP_LOGI(TAG, "Insufficent Funds.");
-        goto exit;
+    if (mbedtls_mpi_cmp_mpi(&d->block.frontier->balance, &d->transaction_amount) == -1) {
+        ESP_LOGW(TAG, "Insufficent Funds.");
+        d->scr.error = jolt_gui_scr_text_create(TITLE, "Insufficient Funds");
+        jolt_gui_scr_set_back_action(d->scr.error, back_to_entry_cb);
+        return;
     }
 
-    jolt_gui_scr_loadingbar_update(d->scr, NULL, "Creating Block", 30);
+    jolt_gui_scr_loadingbar_update(d->scr.progress, NULL, "Creating Block", 30);
 
     /*********************
-     * Create send block *
+     * Populate send block *
      *********************/
-    nl_block_compute_hash(&d->frontier_block, d->send_block.previous);
-    memcpy(d->send_block.representative, d->frontier_block.representative, sizeof(uint256_t));
-    mbedtls_mpi_sub_abs(&d->send_block.balance, &d->frontier_block.balance, &d->transaction_amount);
+    nl_block_compute_hash(d->block.frontier, d->block.send.previous);
+    memcpy(d->block.send.representative, d->block.frontier->representative, sizeof(uint256_t));
+    mbedtls_mpi_sub_abs(&d->block.send.balance, &d->block.frontier->balance, &d->transaction_amount);
 
     /******************************
      * Create confirmation screen *
      ******************************/
     ESP_LOGD(TAG, "Requesting user to confirm transaction");
-    nano_confirm_block(&d->frontier_block, &d->send_block, processing_cb_4, d);
-
-exit:
-    return;
+    nano_confirm_block(d->block.frontier, &d->block.send, processing_cb_4, NULL);
 }
 
 /**
- * @brief Get PoW
+ * @brief Refresh vault for signing
  */
 static void processing_cb_4( bool confirm, void *param ) {
-    send_obj_t *d = param;
-
     if( !confirm ) {
-        //todo: cleanup
-        goto exit;
+        cleanup_complete(NULL);
+        return;
+    }
+
+    /* Refresh vault to get private key */
+    vault_refresh(cleanup_complete, processing_cb_4_1, NULL);
+
+    return;
+}
+
+static void processing_cb_4_1( void *param ){
+    /* Generate Signature */
+
+    /* Sign Send Block */
+    ESP_LOGI(TAG, "Signing Block");
+    jolt_gui_scr_loadingbar_update(d->scr.progress, NULL, "Signing", 70);
+    {
+        CONFIDENTIAL uint256_t private_key;
+        jolt_err_t res;
+
+        if( !nano_index_get_private(private_key, d->cfg.account_index) ) {
+            ESP_LOGI(TAG, "Error getting private key");
+            goto exit;
+        }
+        res = nl_block_sign(&d->block.send, private_key);
+        sodium_memzero(private_key, sizeof(private_key));
+        if(E_SUCCESS != res ) {
+            ESP_LOGI(TAG, "Error Signing Block");
+            goto exit;
+        }
     }
 
     /* Get PoW */
     ESP_LOGD(TAG, "Fetching PoW");
-    jolt_gui_scr_loadingbar_update(d->scr, NULL, "Fetching PoW", 60);
-    nano_network_work_bin( &d->send_block.previous, processing_cb_5, d, d->scr );
+    jolt_gui_scr_loadingbar_update(d->scr.progress, NULL, "Fetching PoW", 60);
+    nano_network_work_bin( d->block.send.previous, processing_cb_5, d, d->scr.progress );
 
     return;
 exit:
+    cleanup_complete( NULL);
     return;
 }
 
 /**
- * @brief Signed and Broadcast if confirmed
+ * @brief Broadcast
  */
 static void processing_cb_5( uint64_t work, void *param, lv_obj_t *scr ){
     send_obj_t *d = param;
 
     if( 0 == work ) {
-        goto exit;
+        d->scr.error = jolt_gui_scr_text_create(TITLE, "Failed to fetch work");
+        jolt_gui_scr_set_action(d->scr.error, cleanup_complete_cb);
+        return;
     }
-    d->send_block.work = work;
-
-    /* Sign Send Block */
-    ESP_LOGI(TAG, "Signing Block");
-    jolt_gui_scr_loadingbar_update(d->scr, NULL, "Signing", 70);
-	if( E_SUCCESS != nl_block_sign(&d->send_block, d->my_private_key) ) {
-		ESP_LOGI(TAG, "Error Signing Block");
-		goto exit;
-	}
+    d->block.send.work = work;
 
     /* Broadcast signed block */
     ESP_LOGI(TAG, "Broadcasting Block");
-    jolt_gui_scr_loadingbar_update(d->scr, NULL, "Broadcasting", 100);
-    nano_network_process( &d->send_block, processing_cb_6, d, NULL); // Cannot reliably cancel at this stage.
-    return;
-exit:
+    jolt_gui_scr_loadingbar_update(d->scr.progress, NULL, "Broadcasting", 100);
+    nano_network_process( &d->block.send, processing_cb_6, NULL, NULL); // Cannot reliably cancel at this stage.
     return;
 }
 
 static void processing_cb_6( esp_err_t status, void *param, lv_obj_t *scr){
-    send_obj_t *d = param;
     if( ESP_OK == status ) {
         jolt_gui_scr_text_create(TITLE_SEND, "Transaction Complete");
     }
 	else {
         jolt_gui_scr_text_create(TITLE_SEND, "Transaction Failed");
     }
-    // todo: cleanup
+    cleanup_complete(NULL);
     return;
 }
-
-#if 0
-/**
- * @brief Create the confirmation screen.
- */
-static lv_res_t number_cb( lv_obj_t *num_scr ) {
-    // todo get rid of this first confirmation
-    char buf[128];
-    cJSON *contact, *json_name, *json_address;
-    float disp_amount;
-
-    disp_amount = (float) jolt_gui_scr_digit_entry_get_double(num_scr);
-    ESP_LOGD(TAG, "Send amount: %f NANO", disp_amount);
-
-    contact = cJSON_GetArrayItem(contacts, idx);
-    if( NULL == contact ) {
-        ESP_LOGE(TAG, "Index out of range");
-        goto exit;
-    }
-
-    json_name = cJSON_Get(contact, "name");
-    if( NULL == json_name ) {
-        ESP_LOGE(TAG, "Contact didn't have field \"name\"");
-        goto exit;
-    }
-    ESP_LOGD(TAG, "Contact name: %s", cJSON_GetStringValue(json_name));
-
-    json_address = cJSON_Get(contact, "address");
-    if( NULL == json_address ) {
-        ESP_LOGE(TAG, "Contact didn't have field \"address\"");
-        goto exit;
-    }
-    dst_address = cJSON_GetStringValue( json_address );
-    ESP_LOGD(TAG, "Contact address: %s", dst_address);
-
-    snprintf(buf, sizeof(buf), "Would you like to send %d NANO to %s\n", disp_amount, dst_address );
-    scr_confirmation = jolt_gui_scr_text_create(TITLE_SEND, buf);
-    jolt_gui_scr_scroll_add_monospace_text( scr_confirmation, dst_address );
-    jolt_gui_scr_set_enter_action(scr_confirmation, processing_cb_1);
-
-    return LV_RES_OK;
-
-exit:
-    return LV_RES_OK;
-}
-#endif
 
 /**
  * @brief Create the amount-entry screen
  */
 static lv_res_t contact_cb( lv_obj_t *btn_sel ) {
-    lv_obj_t *scr = NULL;
-    idx = lv_list_get_btn_index(NULL, btn_sel);
+    d->contact_index = lv_list_get_btn_index(NULL, btn_sel);
 
     ESP_LOGD(TAG, "Creating Digit Entry Screen");
-    scr = jolt_gui_scr_digit_entry_create(TITLE_SEND,
+    d->scr.entry = jolt_gui_scr_digit_entry_create(TITLE_SEND,
         CONFIG_JOLT_NANO_SEND_DIGITS, CONFIG_JOLT_NANO_SEND_DECIMALS);
-    if( NULL == scr ) {
+    if( NULL == d->scr.entry ) {
         ESP_LOGE(TAG, "Failed to create digit entry screen");
     }
-    jolt_gui_scr_set_enter_action(scr, processing_cb_1);
+    /* Set the first entry position to the one's place */
+    jolt_gui_scr_digit_entry_set_pos(d->scr.entry, CONFIG_JOLT_NANO_SEND_DECIMALS);
+
+    jolt_gui_scr_set_enter_action(d->scr.entry, processing_cb_1);
+    jolt_gui_scr_set_back_action(d->scr.entry, entry_back_cb);
 
     return LV_RES_OK;
 }
 
 lv_res_t menu_nano_contacts( lv_obj_t *btn ) {
+    send_obj_t *d = NULL;
+
+    /* Create context */
+    ESP_LOGD(TAG, "Allocating space for send context");
+    d = malloc(sizeof(send_obj_t));
+    if( NULL == d ){
+        ESP_LOGE(TAG, "Could not allocate memory for send_obj_t");
+        return LV_RES_OK;
+    }
+    memset(d, 0, sizeof(send_obj_t));
+    nl_block_init(&d->block.send);
+    d->block.send.type = STATE;
+    mbedtls_mpi_init(&d->transaction_amount);
+    d->contact_index = -1;
+
     /* Read Config */
-    cJSON *contact = NULL;
+    d->cfg.root = nano_get_json(); // never fails
+    d->cfg.contacts = cJSON_Get(d->cfg.root, "contacts");
 
-    json = nano_get_json();
-    contacts = cJSON_Get(json, "contacts");
+    d->cfg.account_index = nano_index_get( d->cfg.root );
 
-    int n_contacts = cJSON_GetArraySize(contacts);
-
-    if( 0 == n_contacts ) {
-        jolt_gui_scr_text_create(TITLE, "No Contacts");
-        goto exit;
+    if( NULL == d->cfg.contacts || 0 == cJSON_GetArraySize(d->cfg.contacts) ) {
+        d->scr.error = jolt_gui_scr_text_create(TITLE, "No Contacts");
+        jolt_gui_scr_set_back_action(d->scr.error, cleanup_complete_cb);
+        return LV_RES_OK;
     }
 
     ESP_LOGD(TAG, "Creating contacts menu");
-    scr_contacts = jolt_gui_scr_menu_create(TITLE);
-    jolt_gui_scr_set_back_action(scr_contacts, cleanup_cb);
+    d->scr.contacts = jolt_gui_scr_menu_create(TITLE);
+    if( NULL == d->scr.contacts ){
+        ESP_LOGE(TAG, "Failed to create contacts menu");
+        cleanup_complete(NULL);
+        return LV_RES_OK;
+    }
+    jolt_gui_scr_set_back_action(d->scr.contacts, cleanup_complete_cb);
+    jolt_gui_scr_set_param(d->scr.contacts, d);
 
     ESP_LOGD(TAG, "Iterating through saved contacts");
-    cJSON_ArrayForEach(contact, contacts){
+    cJSON *contact = NULL;
+    cJSON_ArrayForEach(contact, d->cfg.contacts){
         cJSON *elem;
         elem = cJSON_Get(contact, "name");
-        ESP_LOGD(TAG, "Adding contact list element-name \"%s\"", cJSON_GetStringValue(elem));
-        jolt_gui_scr_menu_add(scr_contacts, NULL, cJSON_GetStringValue(elem), contact_cb);
+        ESP_LOGD(TAG, "Adding contact list element-name \"%s\"",
+                cJSON_GetStringValue(elem));
+        BREAK_IF_NULL(jolt_gui_scr_menu_add(d->scr.contacts,
+                    NULL, cJSON_GetStringValue(elem), contact_cb));
     }
-    return LV_RES_OK;
 
-exit:
-    jolt_json_del(json);
     return LV_RES_OK;
 }

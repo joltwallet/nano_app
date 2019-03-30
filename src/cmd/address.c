@@ -30,7 +30,7 @@ int nano_cmd_address(int argc, char ** argv){
      * Note: atoi returns 0 if provided argument cannot be converted to integer. */
     if( 1 == argc ){
         /* Print only currently selected address */
-        lower = nano_index_get();
+        lower = nano_index_get( NULL );
         upper = lower;
     }
     else{

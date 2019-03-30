@@ -17,7 +17,7 @@ static lv_res_t menu_nano_select_account_index_cb( lv_obj_t *btn_sel ) {
     int32_t index = lv_list_get_btn_index(list, btn_sel);
     if( index >= 0 ) {
         ESP_LOGI(TAG, "Saving index %d", index);
-        nano_index_set(index);
+        nano_index_set(NULL, index);
     }
     else {
         ESP_LOGE(TAG, "Selected button not found in list");
@@ -26,10 +26,10 @@ static lv_res_t menu_nano_select_account_index_cb( lv_obj_t *btn_sel ) {
     return LV_RES_INV;
 }
 
-static lv_res_t menu_nano_select_account_cb( lv_obj_t *btn ) {
+static void menu_nano_select_account_cb( void *dummy ) {
     const char title[] = "Nano";
 
-    uint32_t index = nano_index_get();
+    uint32_t index = nano_index_get(NULL);
     ESP_LOGI(TAG, "Current Nano Address Derivation Index: %d", index);
 
     lv_obj_t *menu = jolt_gui_scr_menu_create(title);
@@ -51,8 +51,6 @@ static lv_res_t menu_nano_select_account_cb( lv_obj_t *btn ) {
         }
     }
     jolt_gui_scr_menu_set_btn_selected(menu, sel);
-
-    return LV_RES_OK;
 }
 
 lv_res_t menu_nano_select_account( lv_obj_t *btn ) {

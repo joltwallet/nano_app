@@ -13,7 +13,7 @@ static const char* TAG = __FILE__;
 static const char TITLE[] = "Nano Address";
 
 
-static lv_res_t menu_nano_address_cb( lv_obj_t *dummy ) {
+static void menu_nano_address_cb( void *dummy ) {
     char buf[120]; // shared buffer for text-address and QR data
     uint256_t public_key;
     lv_obj_t *scr = NULL;
@@ -41,13 +41,12 @@ static lv_res_t menu_nano_address_cb( lv_obj_t *dummy ) {
 
     jolt_gui_scr_scroll_add_qr(scr, buf, strlen(buf));
 
-    return LV_RES_OK;
+    return;
 
 exit:
     if( NULL != scr ) {
         jolt_gui_obj_del(scr);
     }
-    return LV_RES_OK;
 }
 
 lv_res_t menu_nano_address( lv_obj_t *btn ) {

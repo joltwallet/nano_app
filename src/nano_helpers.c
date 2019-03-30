@@ -42,12 +42,15 @@ cJSON *nano_get_json() {
     return verify_json(json);
 }
 
-uint32_t nano_index_get() {
+uint32_t nano_index_get( cJSON * json ) {
     uint32_t index=0;
-    cJSON *json;
     cJSON *obj;
+    bool del_json = false;
 
-    json = nano_get_json();
+    if( NULL == json ){
+        json = nano_get_json();
+        del_json = true;
+    }
     obj = cJSON_GetObjectItemCaseSensitive(json, "index");
     if( NULL == obj ) {
         ESP_LOGW(TAG, "\"index\" key doesn't exist");
@@ -56,16 +59,22 @@ uint32_t nano_index_get() {
     else {
         index = obj->valuedouble;
     }
-    cJSON_Delete( json );
+
+    if( del_json ) {
+        cJSON_Delete( json );
+    }
 
     return index;
 }
 
-bool nano_index_set(uint32_t index) {
-    cJSON *json;
+bool nano_index_set(cJSON *json, uint32_t index) {
     cJSON *obj;
+    bool del_json = false;
 
-    json = nano_get_json();
+    if( NULL == json ){
+        json = nano_get_json();
+        del_json = true;
+    }
     obj = cJSON_GetObjectItemCaseSensitive(json, "index");
     if( NULL == obj ) {
         ESP_LOGW(TAG, "\"index\" key doesn't exist");
@@ -75,7 +84,9 @@ bool nano_index_set(uint32_t index) {
     }
 
     jolt_json_write_app(json);
-    cJSON_Delete( json );
+    if( del_json ) {
+        cJSON_Delete( json );
+    }
 
     return true;
 }
@@ -153,21 +164,15 @@ bool nano_index_get_address(char *address, const uint32_t index) {
 }
 
 bool nano_get_private(uint256_t private_key) {
-    uint32_t index = nano_index_get();
-    if( !nano_index_get_private(private_key, index) ) {
-        return false;
-    }
-    return true;
+    uint32_t index = nano_index_get( NULL );
+    return nano_index_get_private(private_key, index);
 }
 
 bool nano_get_private_public(uint256_t private_key, uint256_t public_key) {
     /* Populates private_key/public_key based on storage index.
      * Will not copy to NULL pointers */
-    uint32_t index = nano_index_get();
-    if( !nano_index_get_private_public(private_key, public_key, index) ) {
-        return false;
-    }
-    return true;
+    uint32_t index = nano_index_get( NULL );
+    return nano_index_get_private_public(private_key, public_key, index);
 }
 
 bool nano_get_public(uint256_t public_key) {
@@ -175,11 +180,8 @@ bool nano_get_public(uint256_t public_key) {
 }
 
 bool nano_get_private_public_address(uint256_t private_key, uint256_t public_key, char *address) {
-    uint32_t index = nano_index_get();
-    if( !nano_index_get_private_public_address(private_key, public_key, address, index) ) {
-        return false;
-    }
-    return true;
+    uint32_t index = nano_index_get( NULL );
+    return nano_index_get_private_public_address(private_key, public_key, address, index);
 }
 
 bool nano_get_address(char *address) {
