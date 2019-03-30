@@ -213,6 +213,7 @@ static void processing_cb_2( void *param ) {
         nano_network_frontier_block( my_address, processing_cb_3, NULL, d->scr.progress );
     }
     else {
+        ESP_LOGD(TAG, "Frontier already fetched");
         processing_cb_3( d->block.frontier, NULL, NULL );
     }
 
@@ -366,8 +367,6 @@ static lv_res_t contact_cb( lv_obj_t *btn_sel ) {
 }
 
 lv_res_t menu_nano_contacts( lv_obj_t *btn ) {
-    send_obj_t *d = NULL;
-
     /* Create context */
     ESP_LOGD(TAG, "Allocating space for send context");
     d = malloc(sizeof(send_obj_t));
