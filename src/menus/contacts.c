@@ -92,7 +92,6 @@ static void cleanup_complete( void *param ) {
  */
 static lv_res_t cleanup_complete_cb( lv_obj_t *dummy ) {
     cleanup_complete(NULL);
-
     return LV_RES_INV;
 }
 
