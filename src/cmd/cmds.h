@@ -37,4 +37,15 @@ int nano_cmd_address(int argc, char ** argv);
  */
 int nano_cmd_contact(int argc, char **argv);
 
+/**
+ * @brief Sign a block
+ *
+ * sign_block account_index frontier_block new_block
+ *
+ * account_index  - derivation index of account to use
+ * frontier_block - escaped json representing the account's frontier block
+ * new_block      - escaped json representing the block to sign
+ */
+int nano_cmd_sign_block(int argc, char **argv);
+
 #endif

@@ -56,50 +56,14 @@ static int console(int argc, char **argv) {
     };
     subconsole_cmd_register(subconsole, &cmd);
 
-#if 0
-    cmd = (esp_console_cmd_t) {
-        .command = "balance",
-        .help = "Get the current Nano Balance",
-        .hint = NULL,
-        .func = &nano_balance,
-    };
-    ESP_ERROR_CHECK( esp_console_cmd_register(&cmd) );
-
-
     cmd = (esp_console_cmd_t) {
         .command = "sign_block",
         .help = "Given the index, head block, and the block to be signed,"
                 "prompt user to sign",
         .hint = NULL,
-        .func = &nano_sign_block,
+        .func = &nano_cmd_sign_block,
     };
-    ESP_ERROR_CHECK( esp_console_cmd_register(&cmd) );
-
-    cmd = (esp_console_cmd_t) {
-        .command = "send",
-        .help = "WiFi send. Inputs: account index, dest address, amount (raw)",
-        .hint = NULL,
-        .func = &nano_send,
-    };
-    ESP_ERROR_CHECK( esp_console_cmd_register(&cmd) );
-
-    cmd = (esp_console_cmd_t) {
-        .command = "contact_update",
-        .help = "Update Nano Contact (index, name, address)",
-        .hint = NULL,
-        .func = &nano_contact_update,
-    };
-    cmd = (esp_console_cmd_t) {
-        .command = "free",
-        .help = "Get the total size of heap memory available",
-        .hint = NULL,
-        .func = &free_mem,
-    };
-    if( argc == 0 ) {
-        printf("Nano Console. Available Functions are:")
-    }
-    printf("First Passed in argument was %s.\n", argv[0]);
-#endif
+    subconsole_cmd_register(subconsole, &cmd);
 
     ESP_LOGD(TAG, "Running %s", argv[0]);
     int res = subconsole_cmd_run(subconsole, argc, argv);

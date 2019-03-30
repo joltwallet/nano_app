@@ -16,37 +16,6 @@ static const char *TAG = "nano_conf";
 
 static const char *title = "Confirm";
 
-#if 0
-bool nano_confirm_contact_update(const menu8g2_t *prev_menu, const char *name,
-        const uint256_t public, const uint8_t index){
-    menu8g2_t menu_obj;
-    menu8g2_t *m = &menu_obj;
-    menu8g2_copy(m, prev_menu);
-
-    char buf[200];
-    snprintf(buf, sizeof(buf), "Update Index: %d ?", index);
-    if ( !menu_confirm_action(m, buf) ){
-        return false;
-    }
-
-    snprintf(buf, sizeof(buf), "Name: %s", name);
-    if ( !menu_confirm_action(m, buf) ){
-        return false;
-    }
-
-    char address[ADDRESS_BUF_LEN];
-    if( E_SUCCESS != nl_public_to_address(address, sizeof(address), public) ){
-        return false;
-    }
-    snprintf(buf, sizeof(buf), "Address: %s", address);
-    if ( !menu_confirm_action(m, buf) ){
-        return false;
-    }
-
-    return true;
-}
-#endif
-
 typedef struct confirm_obj_t{
     nl_block_t *head_block;
     nl_block_t *new_block;
@@ -130,15 +99,9 @@ static lv_res_t rep_change_cb_helper( lv_obj_t *btn ) {
 }
 
 void nano_confirm_block(nl_block_t *head_block, nl_block_t *new_block, confirm_cb_t cb, void *param) {
-    /* IMPORTANT: Expects to be called from OUTSIDE the lvgl event loop. This 
-     * function BLOCKS while waiting for user input.
-     *
-     * Reasoning: avoids requiring a large number of callbacks to perform simple
-     *  logic flows.
-     *
+     /*
      * Prompts user to confirm transaction information before signing
      * Expects State Blocks 
-     * Returns true on affirmation, false on error or cancellation.
      * */
     confirm_obj_t *obj = NULL;
 
