@@ -145,7 +145,7 @@ exit:
     cleanup_complete(d);
 }
 
-int nano_cmd_sign_block(int argc, char **argv) {
+int nano_cmd_block_sign(int argc, char **argv) {
     if( !console_check_equal_argc(argc, 4) ){
         return -1;
     }

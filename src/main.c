@@ -57,11 +57,11 @@ static int console(int argc, char **argv) {
     subconsole_cmd_register(subconsole, &cmd);
 
     cmd = (esp_console_cmd_t) {
-        .command = "sign_block",
+        .command = "block_sign",
         .help = "Given the index, head block, and the block to be signed,"
                 "prompt user to sign",
         .hint = NULL,
-        .func = &nano_cmd_sign_block,
+        .func = &nano_cmd_block_sign,
     };
     subconsole_cmd_register(subconsole, &cmd);
 
