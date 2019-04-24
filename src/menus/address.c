@@ -49,7 +49,8 @@ exit:
     }
 }
 
-lv_res_t menu_nano_address( lv_obj_t *btn ) {
-    vault_refresh(NULL, menu_nano_address_cb, NULL);
-    return LV_RES_OK;
+void menu_nano_address( lv_obj_t *btn, lv_event_t event ) {
+    if(LV_EVENT_SHORT_CLICKED == event){
+        vault_refresh(NULL, menu_nano_address_cb, NULL);
+    }
 }

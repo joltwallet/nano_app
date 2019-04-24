@@ -39,9 +39,10 @@ static void step4_1( void *param );
 static void step5( uint64_t work, void *param, lv_obj_t *scr);
 static void step6( esp_err_t status, void *param, lv_obj_t *scr);
 
-lv_res_t menu_nano_receive( lv_obj_t *btn ) {
-    vault_refresh(NULL, step1, NULL);
-    return LV_RES_OK;
+void menu_nano_receive( lv_obj_t *btn, lv_event_t event ) {
+    if( LV_EVENT_SHORT_CLICKED == event ) {
+        vault_refresh(NULL, step1, NULL);
+    }
 }
 
 /**

@@ -25,28 +25,15 @@ typedef struct confirm_obj_t{
     bool is_send;
 } confirm_obj_t;
 
-static lv_res_t user_cancel( lv_obj_t *btn ) {
-    confirm_obj_t *obj = jolt_gui_get_param( btn );
-    jolt_gui_scr_del();
-    if( NULL != obj->cb ) {
-        obj->cb(false, obj->param);
+static void send_cb( lv_obj_t *btn, lv_event_t event ) {
+    if(LV_EVENT_SHORT_CLICKED == event || LV_EVENT_CANCEL == event) {
+        confirm_obj_t *obj = jolt_gui_obj_get_param( btn );
+        jolt_gui_scr_del();
+        if( NULL != obj->cb ) {
+            obj->cb(LV_EVENT_SHORT_CLICKED==event, obj->param);
+        }
+        free(obj);
     }
-    free(obj);
-    return LV_RES_INV;
-}
-
-static void send_cb( confirm_obj_t *obj ) {
-    if( NULL != obj->cb ) {
-        obj->cb(true, obj->param);
-    }
-    free(obj);
-}
-
-static lv_res_t send_cb_helper( lv_obj_t *btn ) {
-    confirm_obj_t *obj = jolt_gui_get_param( btn );
-    jolt_gui_scr_del();
-    send_cb( obj );
-    return LV_RES_INV;
 }
 
 
@@ -65,14 +52,12 @@ static void rep_change_cb( confirm_obj_t *obj ) {
                 -obj->display_amount, address);
 
         lv_obj_t *scr = jolt_gui_scr_text_create(title, buf);
-        jolt_gui_scr_set_back_action(scr, user_cancel);
-        jolt_gui_scr_set_enter_action(scr, send_cb_helper);
-        jolt_gui_scr_set_back_param(scr, obj);
-        jolt_gui_scr_set_enter_param(scr, obj);
+        jolt_gui_scr_set_event_cb(scr, send_cb);
+        jolt_gui_scr_menu_set_param(scr, obj);
     }
     else {
         ESP_LOGI(TAG, "Detected Receive");
-        /* Auto Receive */
+        /* Auto Receive, no need to prompt */
         if( NULL != obj->cb ) {
             obj->cb(true, obj->param);
         }
@@ -91,11 +76,20 @@ exit:
 }
 
 
-static lv_res_t rep_change_cb_helper( lv_obj_t *btn ) {
-    confirm_obj_t *obj = jolt_gui_get_param( btn );
-    jolt_gui_scr_del();
-    rep_change_cb( obj );
-    return LV_RES_INV;
+static void rep_change_cb_helper( lv_obj_t *btn, lv_event_t event ) {
+    if( LV_EVENT_SHORT_CLICKED == event ) {
+        confirm_obj_t *obj = jolt_gui_obj_get_param( btn );
+        jolt_gui_scr_del();
+        rep_change_cb( obj );
+    }
+    else if( LV_EVENT_CANCEL == event ) {
+		confirm_obj_t *obj = jolt_gui_obj_get_param( btn );
+		jolt_gui_scr_del();
+		if( NULL != obj->cb ) {
+			obj->cb(false, obj->param);
+		}
+		free(obj);
+    }
 }
 
 void nano_confirm_block(nl_block_t *head_block, nl_block_t *new_block, confirm_cb_t cb, void *param) {
@@ -161,10 +155,8 @@ void nano_confirm_block(nl_block_t *head_block, nl_block_t *new_block, confirm_c
             }
             snprintf(buf, sizeof(buf), "Change Rep to %s ?", address);
             lv_obj_t *scr = jolt_gui_scr_text_create(title, buf);
-            jolt_gui_scr_set_back_action(scr, user_cancel);
-            jolt_gui_scr_set_enter_action(scr, rep_change_cb_helper);
-            jolt_gui_scr_set_back_param(scr, obj);
-            jolt_gui_scr_set_enter_param(scr, obj);
+            jolt_gui_scr_set_active_param(scr, obj);
+            jolt_gui_scr_set_event_cb(scr, rep_change_cb_helper); 
         }
         else {
             rep_change_cb( obj );

@@ -12,18 +12,18 @@ static const char TAG[] = "nano_sel_acc";
 static const char TITLE[] = "Nano Account";
 
 /* Stores the selected index to nano_index */
-static lv_res_t menu_nano_select_account_index_cb( lv_obj_t *btn_sel ) {
-    lv_obj_t *list = lv_obj_get_parent(lv_obj_get_parent( btn_sel ));
-    int32_t index = lv_list_get_btn_index(list, btn_sel);
-    if( index >= 0 ) {
-        ESP_LOGI(TAG, "Saving index %d", index);
-        nano_index_set(NULL, index);
+static void menu_nano_select_account_index_cb( lv_obj_t *btn_sel, lv_event_t event ) {
+    if( LV_EVENT_SHORT_CLICKED == event ) {
+        int32_t index = jolt_gui_scr_menu_get_btn_index( btn_sel );
+        if( index >= 0 ) {
+            ESP_LOGI(TAG, "Saving index %d", index);
+            nano_index_set(NULL, index);
+        }
+        else {
+            ESP_LOGE(TAG, "Selected button not found in list");
+        }
+        jolt_gui_scr_del();
     }
-    else {
-        ESP_LOGE(TAG, "Selected button not found in list");
-    }
-    jolt_gui_scr_del();
-    return LV_RES_INV;
 }
 
 static void menu_nano_select_account_cb( void *dummy ) {
@@ -53,7 +53,8 @@ static void menu_nano_select_account_cb( void *dummy ) {
     jolt_gui_scr_menu_set_btn_selected(menu, sel);
 }
 
-lv_res_t menu_nano_select_account( lv_obj_t *btn ) {
-    vault_refresh(NULL, menu_nano_select_account_cb, NULL);
-    return LV_RES_OK;
+void menu_nano_select_account( lv_obj_t *btn, lv_event_t event ) {
+    if( LV_EVENT_SHORT_CLICKED == event ) {
+        vault_refresh(NULL, menu_nano_select_account_cb, NULL);
+    }
 }

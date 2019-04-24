@@ -25,25 +25,24 @@ static void cleanup(int return_code) {
     jolt_cmd_return(return_code);
 }
 
-static lv_res_t confirmation_cb_no( lv_obj_t *btn_sel ) {
-    jolt_gui_scr_del();
-    cleanup(-1);
-    return LV_RES_INV;
-}
-
-static lv_res_t confirmation_cb_yes( lv_obj_t *obj ) {
-    cJSON *new_contact = cJSON_CreateObject();
-    if( NULL == cJSON_AddStringToObject(new_contact, "name", name) ) {
-        ESP_LOGE(TAG, "Failed to add string object \"name\"");
+static void confirmation_cb( lv_obj_t *obj, lv_event_t event ) {
+    if( LV_EVENT_SHORT_CLICKED == event ) {
+        cJSON *new_contact = cJSON_CreateObject();
+        if( NULL == cJSON_AddStringToObject(new_contact, "name", name) ) {
+            ESP_LOGE(TAG, "Failed to add string object \"name\"");
+        }
+        if( NULL == cJSON_AddStringToObject(new_contact, "address", address) ) {
+            ESP_LOGE(TAG, "Failed to add string object \"address\"");
+        }
+        cJSON_AddItemToArray(contacts, new_contact);
+        jolt_json_write_app( json );
+        jolt_gui_scr_del();
+        cleanup(0);
     }
-    if( NULL == cJSON_AddStringToObject(new_contact, "address", address) ) {
-        ESP_LOGE(TAG, "Failed to add string object \"address\"");
+    else if( LV_EVENT_CANCEL == event ){
+        jolt_gui_scr_del();
+        cleanup(-1);
     }
-    cJSON_AddItemToArray(contacts, new_contact);
-    jolt_json_write_app( json );
-    jolt_gui_scr_del();
-    cleanup(0);
-    return LV_RES_INV;
 }
 
 static int confirmation_create() {
@@ -74,8 +73,7 @@ static int confirmation_create() {
     lv_obj_t *scr = NULL;
     scr = jolt_gui_scr_text_create(TITLE, buf);
     jolt_gui_scr_scroll_add_monospace_text(scr, address);
-    jolt_gui_scr_set_back_action(scr, confirmation_cb_no);
-    jolt_gui_scr_set_enter_action(scr, confirmation_cb_yes);
+    jolt_gui_scr_set_event_cb(scr, confirmation_cb);
     return JOLT_CONSOLE_NON_BLOCKING;
 }
 

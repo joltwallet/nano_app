@@ -21,7 +21,7 @@ static void frontier_cb( nl_block_t *block, void *param, lv_obj_t *scr ) {
         //assert( 0 == memcmp(my_public_key, block->account, sizeof(uint32_t) ));
     }
 
-    lv_obj_del(scr);
+    jolt_gui_obj_del(scr);
     if(NULL == block) {
         jolt_gui_scr_text_create(TITLE, "Unable to get account info.");
         return;
@@ -47,7 +47,8 @@ void menu_nano_balance_cb( void *dummy ) {
     nano_network_frontier_block( address, frontier_cb, NULL, scr );
 }
 
-lv_res_t menu_nano_balance( lv_obj_t *btn ) {
-    vault_refresh(NULL, menu_nano_balance_cb, NULL);
-    return LV_RES_OK;
+void menu_nano_balance( lv_obj_t *btn, lv_event_t event ) {
+    if( LV_EVENT_SHORT_CLICKED == event ){
+        vault_refresh(NULL, menu_nano_balance_cb, NULL);
+    }
 }

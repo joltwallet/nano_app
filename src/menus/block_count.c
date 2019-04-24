@@ -27,13 +27,15 @@ static void network_cb( uint32_t count, void *param, lv_obj_t *scr ) {
     }
 }
 
-lv_res_t menu_nano_block_count(lv_obj_t *btn) {
-    lv_obj_t *scr;
-    scr = jolt_gui_scr_preloading_create(TITLE, "Connecting To Server");
-    if( NULL == scr ) {
-        /* Failed to create screen, return early */
-        return LV_RES_OK;
+void menu_nano_block_count(lv_obj_t *btn, lv_event_t event) {
+    if( LV_EVENT_SHORT_CLICKED == event ) {
+        lv_obj_t *scr;
+        scr = jolt_gui_scr_preloading_create(TITLE, "Connecting To Server");
+        if( NULL == scr ) {
+            /* Failed to create screen, return early */
+            ESP_LOGE(TAG, "Failed to create screen");
+            return;
+        }
+        nano_network_block_count(network_cb, NULL, scr);
     }
-    nano_network_block_count(network_cb, NULL, scr);
-    return LV_RES_OK;
 }
