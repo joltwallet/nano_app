@@ -22,7 +22,7 @@ static void cleanup(int return_code) {
     contacts = NULL;
     free(name);
     free(address);
-    jolt_cmd_return(return_code);
+    jolt_cli_return(return_code);
 }
 
 static void confirmation_cb( lv_obj_t *obj, lv_event_t event ) {
@@ -74,7 +74,7 @@ static int confirmation_create() {
     scr = jolt_gui_scr_text_create(TITLE, buf);
     jolt_gui_scr_scroll_add_monospace_text(scr, address);
     jolt_gui_scr_set_event_cb(scr, confirmation_cb);
-    return JOLT_CONSOLE_NON_BLOCKING;
+    return JOLT_CLI_NON_BLOCKING;
 }
 
 int nano_cmd_contact(int argc, char**argv) {

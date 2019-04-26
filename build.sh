@@ -56,8 +56,8 @@ make app -j15
 
 if xtensa-esp32-elf-gcc -Wl,-static -nostartfiles -nodefaultlibs -nostdlib -Os \
     -ffunction-sections -fdata-sections -Wl,--gc-sections \
-    -Wl,-T${IDF_PATH}/components/esp32/ld/esp32.rom.nanofmt.ld \
-    -Wl,-T${IDF_PATH}/components/esp32/ld/esp32.rom.ld -s -o ${ELF_BIN_NAME} \
+    -Wl,-T${IDF_PATH}/components/esp_rom/esp32/ld/esp32.rom.newlib-nano.ld \
+    -Wl,-T${IDF_PATH}/components/esp_rom/esp32/ld/esp32.rom.ld -s -o ${ELF_BIN_NAME} \
     -Wl,-r \
     -Wl,-eapp_main \
     -Wl,--warn-unresolved-symbols \

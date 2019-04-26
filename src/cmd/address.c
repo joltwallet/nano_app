@@ -11,11 +11,11 @@ void success_cb( void *param ) {
         printf("%d: %s\n", index, address);
     }
 
-    jolt_cmd_return(0);
+    jolt_cli_return(0);
 }
 
 void failure_cb( void *param ) {
-    jolt_cmd_return(-1);
+    jolt_cli_return(-1);
 }
 
 
@@ -45,5 +45,5 @@ int nano_cmd_address(int argc, char ** argv){
 
     vault_refresh( failure_cb, success_cb, NULL);
 
-    return JOLT_CONSOLE_NON_BLOCKING;
+    return JOLT_CLI_NON_BLOCKING;
 }

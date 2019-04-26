@@ -30,7 +30,7 @@ int app_main(int argc, char **argv) {
 static int console(int argc, char **argv) {
     /* Entry point for console commands */
     esp_console_cmd_t cmd;
-    subconsole_t *subconsole = subconsole_cmd_init();
+    jolt_cli_sub_t *subconsole = jolt_cli_sub_init();
 
     /* Commands shouldn't rely on WiFi networking; this command is just an example */
     cmd = (esp_console_cmd_t) {
@@ -38,7 +38,7 @@ static int console(int argc, char **argv) {
         .help = "Get the current Nano block count",
         .func = &nano_cmd_count,
     };
-    subconsole_cmd_register(subconsole, &cmd);
+    jolt_cli_sub_cmd_register(subconsole, &cmd);
 
     cmd = (esp_console_cmd_t) {
         .command = "address",
@@ -46,7 +46,7 @@ static int console(int argc, char **argv) {
         .hint = NULL,
         .func = &nano_cmd_address,
     };
-    subconsole_cmd_register(subconsole, &cmd);
+    jolt_cli_sub_cmd_register(subconsole, &cmd);
 
     cmd = (esp_console_cmd_t) {
         .command = "contact",
@@ -54,7 +54,7 @@ static int console(int argc, char **argv) {
         .hint = NULL,
         .func = &nano_cmd_contact,
     };
-    subconsole_cmd_register(subconsole, &cmd);
+    jolt_cli_sub_cmd_register(subconsole, &cmd);
 
     cmd = (esp_console_cmd_t) {
         .command = "block_sign",
@@ -63,13 +63,13 @@ static int console(int argc, char **argv) {
         .hint = NULL,
         .func = &nano_cmd_block_sign,
     };
-    subconsole_cmd_register(subconsole, &cmd);
+    jolt_cli_sub_cmd_register(subconsole, &cmd);
 
     ESP_LOGD(TAG, "Running %s", argv[0]);
-    int res = subconsole_cmd_run(subconsole, argc, argv);
+    int res = jolt_cli_sub_cmd_run(subconsole, argc, argv);
 
     ESP_LOGD(TAG, "Freeing subconsole");
-    subconsole_cmd_free(subconsole);
+    jolt_cli_sub_cmd_free(subconsole);
 
     ESP_LOGD(TAG, "App exiting with code %d", res);
     return res;

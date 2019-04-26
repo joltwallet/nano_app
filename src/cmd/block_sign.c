@@ -30,12 +30,12 @@ static void step_3( void *param );
  */
 static void cleanup_complete( void *param ) {
     sign_block_obj_t *d = param;
-    jolt_cmd_return( d->response );
+    jolt_cli_return( d->response );
     free(d);
 }
 
 static void vault_failure_cb( void * param ) {
-    jolt_cmd_return(0);
+    jolt_cli_return(0);
 }
 
 /**
@@ -79,7 +79,7 @@ static void step_1( void *param ) {
 
 exit:
     if( NULL == d ) {
-        jolt_cmd_return( -1 );
+        jolt_cli_return( -1 );
     }
     else {
         cleanup_complete( d );
@@ -152,5 +152,5 @@ int nano_cmd_block_sign(int argc, char **argv) {
 
     vault_refresh( vault_failure_cb, step_1, argv);
 
-    return JOLT_CONSOLE_NON_BLOCKING;
+    return JOLT_CLI_NON_BLOCKING;
 }
