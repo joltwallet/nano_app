@@ -1,3 +1,5 @@
+#define LOG_LOCAL_LEVEL ESP_LOG_DEBUG
+
 #include <stddef.h>
 #include "jolt_lib.h"
 
@@ -9,7 +11,7 @@ static int console(int argc, char **argv);
 
 int app_main(int argc, char **argv) {
     ESP_LOGI(TAG, "argc: %d", argc);
-    lv_obj_t *menu = NULL;
+    jolt_gui_obj_t *menu = NULL;
     if( 0 == argc)  {
         const char title[] = "Nano";
         menu = jolt_gui_scr_menu_create(title);
@@ -65,7 +67,7 @@ static int console(int argc, char **argv) {
     };
     jolt_cli_sub_cmd_register(subconsole, &cmd);
 
-    ESP_LOGD(TAG, "Running %s", argv[0]);
+    ESP_LOGD(TAG, "(argc %d) Running %s", argc, argv[0]);
     int res = jolt_cli_sub_cmd_run(subconsole, argc, argv);
 
     ESP_LOGD(TAG, "Freeing subconsole");

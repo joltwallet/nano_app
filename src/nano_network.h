@@ -13,13 +13,13 @@
 #include "nano_lib.h"
 #include "jolt_lib.h"
 
-typedef void (*nano_network_block_count_cb_t)( uint32_t count, void *param, lv_obj_t *scr );
-typedef void (*nano_network_work_cb_t)( uint64_t work, void *param, lv_obj_t *scr );
-typedef void (*nano_network_frontier_hash_cb_t)( hex256_t frontier_block_hash, void *param, lv_obj_t *scr );
-typedef void (*nano_network_block_cb_t)( nl_block_t *block, void *param, lv_obj_t *scr );
-typedef void (*nano_network_pending_hash_cb_t)(hex256_t pending_block_hash, mbedtls_mpi *amount, void *param, lv_obj_t *scr);
+typedef void (*nano_network_block_count_cb_t)( uint32_t count, void *param, jolt_gui_obj_t *scr );
+typedef void (*nano_network_work_cb_t)( uint64_t work, void *param, jolt_gui_obj_t *scr );
+typedef void (*nano_network_frontier_hash_cb_t)( hex256_t frontier_block_hash, void *param, jolt_gui_obj_t *scr );
+typedef void (*nano_network_block_cb_t)( nl_block_t *block, void *param, jolt_gui_obj_t *scr );
+typedef void (*nano_network_pending_hash_cb_t)(hex256_t pending_block_hash, mbedtls_mpi *amount, void *param, jolt_gui_obj_t *scr);
 typedef nano_network_block_cb_t nano_network_frontier_block_cb_t;
-typedef void (*nano_network_process_cb_t)( esp_err_t status, void *param, lv_obj_t *scr);
+typedef void (*nano_network_process_cb_t)( esp_err_t status, void *param, jolt_gui_obj_t *scr);
 
 
 /**
@@ -30,7 +30,7 @@ typedef void (*nano_network_process_cb_t)( esp_err_t status, void *param, lv_obj
  * @param[in] cb Callback to be executed afterwards
  * @param[in] param Pointer to be passed to callback
  */
-esp_err_t nano_network_block_count(nano_network_block_count_cb_t cb, void *param, lv_obj_t *scr);
+esp_err_t nano_network_block_count(nano_network_block_count_cb_t cb, void *param, jolt_gui_obj_t *scr);
 
 /**
  * @brief Request the Server for work on a given hash (hex).
@@ -42,7 +42,7 @@ esp_err_t nano_network_block_count(nano_network_block_count_cb_t cb, void *param
  * @param[in] cb Callback to be executed afterwards
  * @param[in] param Pointer to be passed to callback
  */
-esp_err_t nano_network_work( const hex256_t hash, nano_network_work_cb_t cb, void *param, lv_obj_t *scr );
+esp_err_t nano_network_work( const hex256_t hash, nano_network_work_cb_t cb, void *param, jolt_gui_obj_t *scr );
 
 /**
  * @brief Request the Server for work on a given hash (binary).
@@ -50,7 +50,7 @@ esp_err_t nano_network_work( const hex256_t hash, nano_network_work_cb_t cb, voi
  * @param[in] cb Callback to be executed afterwards
  * @param[in] param Pointer to be passed to callback
  */
-esp_err_t nano_network_work_bin( const uint256_t hash_bin, nano_network_work_cb_t cb, void *param, lv_obj_t *scr );
+esp_err_t nano_network_work_bin( const uint256_t hash_bin, nano_network_work_cb_t cb, void *param, jolt_gui_obj_t *scr );
 
 /**
  * @brief Get the head block hash for some Nano account.
@@ -61,7 +61,7 @@ esp_err_t nano_network_work_bin( const uint256_t hash_bin, nano_network_work_cb_
  * @param[in] cb Callback to be executed afterwards
  * @param[in] param Pointer to be passed to callback
  */
-esp_err_t nano_network_frontier_hash( const char *account_address, nano_network_frontier_hash_cb_t cb, void *param, lv_obj_t *scr );
+esp_err_t nano_network_frontier_hash( const char *account_address, nano_network_frontier_hash_cb_t cb, void *param, jolt_gui_obj_t *scr );
 
 /**
  * @brief Fetch the block for the specified hash.
@@ -72,7 +72,7 @@ esp_err_t nano_network_frontier_hash( const char *account_address, nano_network_
  * @param[in] cb Callback to be executed afterwards
  * @param[in] param Pointer to be passed to callback
  */
-esp_err_t nano_network_block( const hex256_t block_hash, nano_network_block_cb_t cb, void *param, lv_obj_t *scr );
+esp_err_t nano_network_block( const hex256_t block_hash, nano_network_block_cb_t cb, void *param, jolt_gui_obj_t *scr );
 
 /**
  * @brief Get the first pending block for an account
@@ -83,7 +83,7 @@ esp_err_t nano_network_block( const hex256_t block_hash, nano_network_block_cb_t
  * @param[in] cb Callback to be executed afterwards
  * @param[in] param Pointer to be passed to callback
  */
-esp_err_t nano_network_pending_hash( const char *account_address, nano_network_pending_hash_cb_t cb, void *param, lv_obj_t *scr );
+esp_err_t nano_network_pending_hash( const char *account_address, nano_network_pending_hash_cb_t cb, void *param, jolt_gui_obj_t *scr );
 
 /**
  * @brief Get the frontier block of an account
@@ -102,7 +102,7 @@ esp_err_t nano_network_pending_hash( const char *account_address, nano_network_p
  * @param[in] cb Callback to be executed afterwards
  * @param[in] param Pointer to be passed to callback
  */
-esp_err_t nano_network_frontier_block( const char *address, nano_network_frontier_block_cb_t cb, void *param, lv_obj_t *scr );
+esp_err_t nano_network_frontier_block( const char *address, nano_network_frontier_block_cb_t cb, void *param, jolt_gui_obj_t *scr );
 
 /**
  * @brief Send a signed block off to the network.
@@ -110,7 +110,7 @@ esp_err_t nano_network_frontier_block( const char *address, nano_network_frontie
  * @param[in] cb Callback to be executed afterwards
  * @param[in] param Pointer to be passed to callback
  */
-esp_err_t nano_network_process( const nl_block_t *block, nano_network_process_cb_t cb, void *param, lv_obj_t *scr);
+esp_err_t nano_network_process( const nl_block_t *block, nano_network_process_cb_t cb, void *param, jolt_gui_obj_t *scr);
 
 
 #endif

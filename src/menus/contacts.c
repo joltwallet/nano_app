@@ -22,20 +22,20 @@ static const char TITLE[] = "Contacts";
 static const char TITLE_SEND[] = "Send";
 
 /* Static Function Declaration */
-static void processing_cb_1( lv_obj_t *dummy, lv_event_t event );
+static void processing_cb_1( jolt_gui_obj_t *dummy, jolt_gui_event_t event );
 static void processing_cb_2( void *param );
-static void processing_cb_3( nl_block_t *block, void *param, lv_obj_t *scr );
+static void processing_cb_3( nl_block_t *block, void *param, jolt_gui_obj_t *scr );
 static void processing_cb_4( bool confirm, void *param );
 static void processing_cb_5( void *param );
-static void processing_cb_6( uint64_t work, void *param, lv_obj_t *scr );
-static void processing_cb_7( esp_err_t status, void *param, lv_obj_t *scr);
+static void processing_cb_6( uint64_t work, void *param, jolt_gui_obj_t *scr );
+static void processing_cb_7( esp_err_t status, void *param, jolt_gui_obj_t *scr);
 
 typedef struct {
     struct{
-        lv_obj_t *contacts;                /**< Contacts list */
-        lv_obj_t *progress;                /**< Displays progress bar of processing transaction*/
-        lv_obj_t *entry;                   /**< Screen to enter send amount */
-        lv_obj_t *error;                   /**< DIsplay error */
+        jolt_gui_obj_t *contacts;                /**< Contacts list */
+        jolt_gui_obj_t *progress;                /**< Displays progress bar of processing transaction*/
+        jolt_gui_obj_t *entry;                   /**< Screen to enter send amount */
+        jolt_gui_obj_t *error;                   /**< DIsplay error */
     } scr;
 
     struct{
@@ -90,14 +90,14 @@ static void cleanup_complete( void *param ) {
  *
  * Called upon exit, completion, OOM-errors, or corrupt data.
  */
-static void cleanup_complete_cb( lv_obj_t *dummy, lv_event_t event ) {
-    if( LV_EVENT_CANCEL == event ) {
+static void cleanup_complete_cb( jolt_gui_obj_t *dummy, jolt_gui_event_t event ) {
+    if( jolt_gui_event.cancel == event ) {
         cleanup_complete(NULL);
     }
 }
 
-static void back_to_entry_cb( lv_obj_t *dummy, lv_event_t event ) {
-    if(LV_EVENT_CANCEL == event ){
+static void back_to_entry_cb( jolt_gui_obj_t *dummy, jolt_gui_event_t event ) {
+    if(jolt_gui_event.cancel == event ){
         /* Screen cleanup */
         if(d->scr.progress) jolt_gui_obj_del(d->scr.progress);
         d->scr.progress = NULL;
@@ -116,7 +116,7 @@ static void back_to_entry_cb( lv_obj_t *dummy, lv_event_t event ) {
  * @param[in] num_scr Number entry screen to get values from
  * @param[out] val BigInt to populate with raw value.
  */
-static void entry_to_mpi(lv_obj_t *num_scr, mbedtls_mpi *val ) {
+static void entry_to_mpi(jolt_gui_obj_t *num_scr, mbedtls_mpi *val ) {
     /* Populate transaction Amount.
      *     1. Convert the user entered value into a string (no decimal, dealing with raw)
      *     2. Tack on enough 0's to agree with the decimal place in the GUI
@@ -146,8 +146,8 @@ static void entry_to_mpi(lv_obj_t *num_scr, mbedtls_mpi *val ) {
 /**
  * @brief Prompts for PIN to get account access
  */
-static void processing_cb_1( lv_obj_t *num_scr, lv_event_t event ) {
-    if(LV_EVENT_SHORT_CLICKED == event) {
+static void processing_cb_1( jolt_gui_obj_t *num_scr, jolt_gui_event_t event ) {
+    if(jolt_gui_event.short_clicked == event) {
         /* populates dst_address */
         cJSON *contact, *json_address;
 
@@ -175,7 +175,7 @@ static void processing_cb_1( lv_obj_t *num_scr, lv_event_t event ) {
         /* Prompt for pin to derive public address */
         vault_refresh(NULL, processing_cb_2, NULL);
     }
-    else if(LV_EVENT_CANCEL == event){
+    else if(jolt_gui_event.cancel == event){
         jolt_gui_obj_del(d->scr.entry);
         d->scr.entry = NULL;
 
@@ -228,7 +228,7 @@ exit:
 /**
  * @brief Craft send block
  */
-static void processing_cb_3( nl_block_t *frontier_block, void *param, lv_obj_t *scr ) {
+static void processing_cb_3( nl_block_t *frontier_block, void *param, jolt_gui_obj_t *scr ) {
 
     if( NULL == frontier_block ) {
         /* No frontier blocks */
@@ -318,7 +318,7 @@ exit:
 /**
  * @brief Broadcast
  */
-static void processing_cb_6( uint64_t work, void *param, lv_obj_t *scr ){
+static void processing_cb_6( uint64_t work, void *param, jolt_gui_obj_t *scr ){
     send_obj_t *d = param;
 
     if( 0 == work ) {
@@ -335,7 +335,7 @@ static void processing_cb_6( uint64_t work, void *param, lv_obj_t *scr ){
     return;
 }
 
-static void processing_cb_7( esp_err_t status, void *param, lv_obj_t *scr){
+static void processing_cb_7( esp_err_t status, void *param, jolt_gui_obj_t *scr){
     if( ESP_OK == status ) {
         jolt_gui_scr_text_create(TITLE_SEND, "Transaction Complete");
     }
@@ -349,8 +349,8 @@ static void processing_cb_7( esp_err_t status, void *param, lv_obj_t *scr){
 /**
  * @brief Create the amount-entry screen
  */
-static void contact_cb( lv_obj_t *btn_sel, lv_event_t event ) {
-    if( LV_EVENT_SHORT_CLICKED == event ) {
+static void contact_cb( jolt_gui_obj_t *btn_sel, jolt_gui_event_t event ) {
+    if( jolt_gui_event.short_clicked == event ) {
         d->contact_index = jolt_gui_scr_menu_get_btn_index(btn_sel);
 
         ESP_LOGD(TAG, "Creating Digit Entry Screen");
@@ -367,8 +367,8 @@ static void contact_cb( lv_obj_t *btn_sel, lv_event_t event ) {
     }
 }
 
-void menu_nano_contacts( lv_obj_t *btn, lv_event_t event ) {
-    if( LV_EVENT_SHORT_CLICKED == event ) {
+void menu_nano_contacts( jolt_gui_obj_t *btn, jolt_gui_event_t event ) {
+    if( jolt_gui_event.short_clicked == event ) {
         /* Create context */
         ESP_LOGD(TAG, "Allocating space for send context");
         d = malloc(sizeof(send_obj_t));

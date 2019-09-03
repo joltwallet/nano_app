@@ -9,11 +9,10 @@
 #include "submenus.h"
 
 static const char TAG[] = "nano_sel_acc";
-static const char TITLE[] = "Nano Account";
 
 /* Stores the selected index to nano_index */
-static void menu_nano_select_account_index_cb( lv_obj_t *btn_sel, lv_event_t event ) {
-    if( LV_EVENT_SHORT_CLICKED == event ) {
+static void menu_nano_select_account_index_cb( jolt_gui_obj_t *btn_sel, jolt_gui_event_t event ) {
+    if( jolt_gui_event.short_clicked == event ) {
         int32_t index = jolt_gui_scr_menu_get_btn_index( btn_sel );
         if( index >= 0 ) {
             ESP_LOGI(TAG, "Saving index %d", index);
@@ -22,7 +21,7 @@ static void menu_nano_select_account_index_cb( lv_obj_t *btn_sel, lv_event_t eve
         else {
             ESP_LOGE(TAG, "Selected button not found in list");
         }
-        jolt_gui_scr_del();
+        jolt_gui_scr_del(btn_sel);
     }
 }
 
@@ -32,8 +31,8 @@ static void menu_nano_select_account_cb( void *dummy ) {
     uint32_t index = nano_index_get(NULL);
     ESP_LOGI(TAG, "Current Nano Address Derivation Index: %d", index);
 
-    lv_obj_t *menu = jolt_gui_scr_menu_create(title);
-    lv_obj_t *sel = NULL;
+    jolt_gui_obj_t *menu = jolt_gui_scr_menu_create(title);
+    jolt_gui_obj_t *sel = NULL;
 
     for(uint8_t i=0; i < 10; i++) {
         char address[ADDRESS_BUF_LEN];
@@ -44,7 +43,7 @@ static void menu_nano_select_account_cb( void *dummy ) {
         else {
             snprintf(buf, sizeof(buf), "%d. %s", i+1, address);
         }
-        lv_obj_t *btn = jolt_gui_scr_menu_add(menu, NULL, buf,
+        jolt_gui_obj_t *btn = jolt_gui_scr_menu_add(menu, NULL, buf,
                 menu_nano_select_account_index_cb);
         if( i == index || 0 == i ) {
             sel = btn;
@@ -53,8 +52,8 @@ static void menu_nano_select_account_cb( void *dummy ) {
     jolt_gui_scr_menu_set_btn_selected(menu, sel);
 }
 
-void menu_nano_select_account( lv_obj_t *btn, lv_event_t event ) {
-    if( LV_EVENT_SHORT_CLICKED == event ) {
+void menu_nano_select_account( jolt_gui_obj_t *btn, jolt_gui_event_t event ) {
+    if( jolt_gui_event.short_clicked == event ) {
         vault_refresh(NULL, menu_nano_select_account_cb, NULL);
     }
 }

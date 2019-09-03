@@ -18,7 +18,7 @@ static const char TITLE[] = "Receive Nano";
 
 typedef struct {
     struct{
-        lv_obj_t *progress;   /** Progress bar screen */
+        jolt_gui_obj_t *progress;   /** Progress bar screen */
     } scr;
 
     struct{
@@ -32,15 +32,15 @@ typedef struct {
 } receive_obj_t;
 
 static void step1( void *param );
-static void step2(hex256_t pending_block_hash, mbedtls_mpi *amount, void *param, lv_obj_t *scr);
-static void step3( nl_block_t *frontier_block, void *param, lv_obj_t *scr );
+static void step2(hex256_t pending_block_hash, mbedtls_mpi *amount, void *param, jolt_gui_obj_t *scr);
+static void step3( nl_block_t *frontier_block, void *param, jolt_gui_obj_t *scr );
 static void step4( bool confirm, void *param);
 static void step4_1( void *param );
-static void step5( uint64_t work, void *param, lv_obj_t *scr);
-static void step6( esp_err_t status, void *param, lv_obj_t *scr);
+static void step5( uint64_t work, void *param, jolt_gui_obj_t *scr);
+static void step6( esp_err_t status, void *param, jolt_gui_obj_t *scr);
 
-void menu_nano_receive( lv_obj_t *btn, lv_event_t event ) {
-    if( LV_EVENT_SHORT_CLICKED == event ) {
+void menu_nano_receive( jolt_gui_obj_t *btn, jolt_gui_event_t event ) {
+    if( jolt_gui_event.short_clicked == event ) {
         vault_refresh(NULL, step1, NULL);
     }
 }
@@ -110,7 +110,7 @@ exit:
     return;
 }
 
-static void step2(hex256_t pending_block_hash, mbedtls_mpi *amount, void *param, lv_obj_t *scr) {
+static void step2(hex256_t pending_block_hash, mbedtls_mpi *amount, void *param, jolt_gui_obj_t *scr) {
     receive_obj_t *d = param;
 
     /* Copy over the pending block hash */
@@ -155,7 +155,7 @@ exit:
     return;
 }
 
-static void step3( nl_block_t *frontier_block, void *param, lv_obj_t *scr ){
+static void step3( nl_block_t *frontier_block, void *param, jolt_gui_obj_t *scr ){
     receive_obj_t *d = param;
 
     jolt_gui_scr_loadingbar_update(d->scr.progress, NULL, "Creating Block", 30);
@@ -258,7 +258,7 @@ exit:
 }
 
 
-static void step5( uint64_t work, void *param, lv_obj_t *scr ) {
+static void step5( uint64_t work, void *param, jolt_gui_obj_t *scr ) {
     receive_obj_t *d = param;
 
     if( 0 == work ) {
@@ -281,7 +281,7 @@ exit:
     return;
 }
 
-static void step6( esp_err_t status, void *param, lv_obj_t *scr) {
+static void step6( esp_err_t status, void *param, jolt_gui_obj_t *scr) {
     receive_obj_t *d = param;
 
     cleanup_complete( d );

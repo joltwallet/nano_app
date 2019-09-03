@@ -25,12 +25,12 @@ typedef struct confirm_obj_t{
     bool is_send;
 } confirm_obj_t;
 
-static void send_cb( lv_obj_t *btn, lv_event_t event ) {
-    if(LV_EVENT_SHORT_CLICKED == event || LV_EVENT_CANCEL == event) {
+static void send_cb( jolt_gui_obj_t *btn, jolt_gui_event_t event ) {
+    if(jolt_gui_event.short_clicked == event || jolt_gui_event.cancel == event) {
         confirm_obj_t *obj = jolt_gui_obj_get_param( btn );
-        jolt_gui_scr_del();
+        jolt_gui_scr_del(btn);
         if( NULL != obj->cb ) {
-            obj->cb(LV_EVENT_SHORT_CLICKED==event, obj->param);
+            obj->cb(jolt_gui_event.short_clicked==event, obj->param);
         }
         free(obj);
     }
@@ -51,7 +51,7 @@ static void rep_change_cb( confirm_obj_t *obj ) {
                 "Send %."STR(CONFIG_JOLT_NANO_CONFIRM_DECIMALS)"lf NANO to %s ?",
                 -obj->display_amount, address);
 
-        lv_obj_t *scr = jolt_gui_scr_text_create(title, buf);
+        jolt_gui_obj_t *scr = jolt_gui_scr_text_create(title, buf);
         jolt_gui_scr_set_event_cb(scr, send_cb);
         jolt_gui_scr_menu_set_param(scr, obj);
     }
@@ -76,15 +76,15 @@ exit:
 }
 
 
-static void rep_change_cb_helper( lv_obj_t *btn, lv_event_t event ) {
-    if( LV_EVENT_SHORT_CLICKED == event ) {
+static void rep_change_cb_helper( jolt_gui_obj_t *btn, jolt_gui_event_t event ) {
+    if( jolt_gui_event.short_clicked == event ) {
         confirm_obj_t *obj = jolt_gui_obj_get_param( btn );
-        jolt_gui_scr_del();
+        jolt_gui_scr_del(btn);
         rep_change_cb( obj );
     }
-    else if( LV_EVENT_CANCEL == event ) {
+    else if( jolt_gui_event.cancel == event ) {
 		confirm_obj_t *obj = jolt_gui_obj_get_param( btn );
-		jolt_gui_scr_del();
+		jolt_gui_scr_del(btn);
 		if( NULL != obj->cb ) {
 			obj->cb(false, obj->param);
 		}
@@ -154,7 +154,7 @@ void nano_confirm_block(nl_block_t *head_block, nl_block_t *new_block, confirm_c
                 goto exit;
             }
             snprintf(buf, sizeof(buf), "Change Rep to %s ?", address);
-            lv_obj_t *scr = jolt_gui_scr_text_create(title, buf);
+            jolt_gui_obj_t *scr = jolt_gui_scr_text_create(title, buf);
             jolt_gui_scr_set_active_param(scr, obj);
             jolt_gui_scr_set_event_cb(scr, rep_change_cb_helper); 
         }

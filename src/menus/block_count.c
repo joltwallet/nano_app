@@ -12,7 +12,7 @@
 static const char TAG[] = "nano_block_count";
 static const char TITLE[] = "Block Count";
 
-static void network_cb( uint32_t count, void *param, lv_obj_t *scr ) {
+static void network_cb( uint32_t count, void *param, jolt_gui_obj_t *scr ) {
     /* Delete the preloading screen */
     jolt_gui_obj_del( scr );
 
@@ -27,9 +27,9 @@ static void network_cb( uint32_t count, void *param, lv_obj_t *scr ) {
     }
 }
 
-void menu_nano_block_count(lv_obj_t *btn, lv_event_t event) {
-    if( LV_EVENT_SHORT_CLICKED == event ) {
-        lv_obj_t *scr;
+void menu_nano_block_count(jolt_gui_obj_t *btn, jolt_gui_event_t event) {
+    if( jolt_gui_event.short_clicked == event ) {
+        jolt_gui_obj_t *scr;
         scr = jolt_gui_scr_preloading_create(TITLE, "Connecting To Server");
         if( NULL == scr ) {
             /* Failed to create screen, return early */

@@ -25,8 +25,8 @@ static void cleanup(int return_code) {
     jolt_cli_return(return_code);
 }
 
-static void confirmation_cb( lv_obj_t *obj, lv_event_t event ) {
-    if( LV_EVENT_SHORT_CLICKED == event ) {
+static void confirmation_cb( jolt_gui_obj_t *obj, jolt_gui_event_t event ) {
+    if( jolt_gui_event.short_clicked == event ) {
         cJSON *new_contact = cJSON_CreateObject();
         if( NULL == cJSON_AddStringToObject(new_contact, "name", name) ) {
             ESP_LOGE(TAG, "Failed to add string object \"name\"");
@@ -36,11 +36,11 @@ static void confirmation_cb( lv_obj_t *obj, lv_event_t event ) {
         }
         cJSON_AddItemToArray(contacts, new_contact);
         jolt_json_write_app( json );
-        jolt_gui_scr_del();
+        jolt_gui_scr_del(obj);
         cleanup(0);
     }
-    else if( LV_EVENT_CANCEL == event ){
-        jolt_gui_scr_del();
+    else if( jolt_gui_event.cancel == event ){
+        jolt_gui_scr_del(obj);
         cleanup(-1);
     }
 }
@@ -70,7 +70,7 @@ static int confirmation_create() {
     else {
         snprintf(buf, sizeof(buf), confirmation_update_str, idx+1, name);
     }
-    lv_obj_t *scr = NULL;
+    jolt_gui_obj_t *scr = NULL;
     scr = jolt_gui_scr_text_create(TITLE, buf);
     jolt_gui_scr_scroll_add_monospace_text(scr, address);
     jolt_gui_scr_set_event_cb(scr, confirmation_cb);

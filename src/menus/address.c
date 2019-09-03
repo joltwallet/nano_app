@@ -16,7 +16,7 @@ static const char TITLE[] = "Nano Address";
 static void menu_nano_address_cb( void *dummy ) {
     char buf[120]; // shared buffer for text-address and QR data
     uint256_t public_key;
-    lv_obj_t *scr = NULL;
+    jolt_gui_obj_t *scr = NULL;
     jolt_err_t err;
 
     if( !nano_get_private_public_address(NULL, public_key, buf) ) {
@@ -49,8 +49,8 @@ exit:
     }
 }
 
-void menu_nano_address( lv_obj_t *btn, lv_event_t event ) {
-    if(LV_EVENT_SHORT_CLICKED == event){
+void menu_nano_address( jolt_gui_obj_t *btn, jolt_gui_event_t event ) {
+    if(jolt_gui_event.short_clicked == event){
         vault_refresh(NULL, menu_nano_address_cb, NULL);
     }
 }

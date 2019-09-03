@@ -11,9 +11,9 @@ EXTRA_COMPONENT_DIRS = \
         $(PROJECT_PATH)/jolt_wallet/jolt_os \
         $(PROJECT_PATH)/jolt_wallet/components
 
-#        -Werror \
 
 CFLAGS += \
+        -Werror \
         -DJOLT_APP \
         -DJOLT_GUI_DEBUG_FUNCTIONS
 

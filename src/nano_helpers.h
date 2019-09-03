@@ -6,7 +6,6 @@
 #include "cJSON.h"
 
 #define HARDEN 0x80000000
-#define cJSON_Get cJSON_GetObjectItemCaseSensitive
 
 /**
  * @brief Loads and verifies the application configuration JSON
