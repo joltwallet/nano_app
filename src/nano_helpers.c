@@ -11,7 +11,6 @@ static const char TAG[] = "nano_helpers";
  * @brief Ensure all the fields are present in the json config.
  */
 static cJSON *verify_json( cJSON *json ) {
-#define EXIT_IF_NULL(x) save = true; if( NULL == x ) goto exit;
     bool save = false;
     if( NULL == json ) {
         /* Create Default JSON */
@@ -19,10 +18,12 @@ static cJSON *verify_json( cJSON *json ) {
     }
 
     if( NULL == cJSON_Get(json, "index") ) {
+        save = true;
         ESP_LOGW(TAG, "key %s not found", "index");
         EXIT_IF_NULL(cJSON_AddNumberToObject(json, "index", 0) );
     }
     if( NULL == cJSON_Get(json, "contacts") ) {
+        save = true;
         ESP_LOGW(TAG, "key %s not found", "index");
         EXIT_IF_NULL( cJSON_AddArrayToObject(json, "contacts") );
     }
@@ -34,7 +35,6 @@ exit:
     assert( false ); // force a reboot
     jolt_json_del(json);
     return NULL;
-#undef EXIT_IF_NULL
 }
 
 cJSON *nano_get_json() {

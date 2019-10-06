@@ -6,6 +6,7 @@
 PROJECT_NAME := Nano
 
 EXTRA_COMPONENT_DIRS = \
+		$(IDF_PATH)/tools/unit-test-app/components/ \
         $(PROJECT_PATH)/src \
         $(PROJECT_PATH)/jolt_wallet/jolt_os/lvgl \
         $(PROJECT_PATH)/jolt_wallet/jolt_os \
