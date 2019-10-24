@@ -9,7 +9,7 @@
 static const char TAG[] = "nano_main";
 static int console(int argc, char **argv);
 
-int app_main(int argc, char **argv) {
+int japp_main(int argc, char **argv) {
     ESP_LOGI(TAG, "argc: %d", argc);
     jolt_gui_obj_t *menu = NULL;
     if( 0 == argc)  {
