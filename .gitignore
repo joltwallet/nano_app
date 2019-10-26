@@ -4,7 +4,9 @@
 *.gz
 .d/
 build/
-sdkconfig*
+sdkconfig
+sdkconfig.old
+sdkconfig.defaults
 coin.path
 *.uncompressed
 partitions.csv
