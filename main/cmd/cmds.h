@@ -1,13 +1,23 @@
 #ifndef NANO_CMDS_H__
 #define NANO_CMDS_H__
 
-int nano_cmd_count(int argc, char**argv);
+int nano_cmd_count( int argc, char **argv );
 
 /**
  * @brief Print the Addresses of given index
  * Optionally takes a second argument to print the inclusive range.
+ *
+ * Examples:
+ *
+ *
+ *     $ Nano address
+ *     {"addresses":[{"index":0,"address":nano_3of1t4mf4y8udapj45zgg5bewmc79sagbmwifsmaikbmyzodst1hk55pjqcz}]}
+ *
+ *     $ Nano address 0
+ *     {"addresses":[{"index":0,"address":nano_3of1t4mf4y8udapj45zgg5bewmc79sagbmwifsmaikbmyzodst1hk55pjqcz}]}
+ *
  */
-int nano_cmd_address(int argc, char ** argv);
+int nano_cmd_address( int argc, char **argv );
 
 /**
  * @brief Modify the contactbook
@@ -35,7 +45,7 @@ int nano_cmd_address(int argc, char ** argv);
  * @return 0 on success
  *
  */
-int nano_cmd_contact(int argc, char **argv);
+int nano_cmd_contact( int argc, char **argv );
 
 /**
  * @brief Sign a block
@@ -47,10 +57,26 @@ int nano_cmd_contact(int argc, char **argv);
  * new_block      - escaped json representing the block to sign
  *
  * Example command;
- * Nano block_sign 0 "{\"account\": \"xrb_1n3hccnsf5tz4pbuftk69p7jobuh6afcriqqzbkd5pooyyr5be6fc3khfmbi\",\"amount\": \"1000000000000000000000000000\",  \"type\": \"state\",  \"representative\": \"xrb_1cwswatjifmjnmtu5toepkwca64m7qtuukizyjxsghujtpdr9466wjmn89d8\",  \"previous\": \"4635A79A0474ACD84C42DC847163E15867E547CAEF3367E7FAA45187E965B88D\",  \"work\": \"9152b3d12cc0196b\",  \"signature\":
- * \"A70818F4A9F533CFC52EFE8454F5243C8E5B6801DC82E613112891D58825AE084D6E154AF88F1A85CF7DCDB6E4FA92205829474548064FABB33858D7020BA80C\",  \"link\": \"3BC45C628A4269D841272B48C67E89927B2B35A4B01BD3A71F9FBD3523D492C6\",  \"balance\": \"10000000000000000000000000000\"}" "{\"account\": \"xrb_1n3hccnsf5tz4pbuftk69p7jobuh6afcriqqzbkd5pooyyr5be6fc3khfmbi\", \"type\": \"state\", \"representative\":
- * \"xrb_1cwswatjifmjnmtu5toepkwca64m7qtuukizyjxsghujtpdr9466wjmn89d8\", \"previous\": \"D09342477E592B53A0C031A1D529476732DACEFE03CCD3867294D2DF0995789D\", \"link\": \"261F4B979009FD5665331AC72A95C8906285DCCAAACE2FD0F07AA39D738A1216\", \"balance\": \"9000000000000000000000000000\"}"
+ * Nano block_sign 0 "{\"account\":
+ * \"xrb_1n3hccnsf5tz4pbuftk69p7jobuh6afcriqqzbkd5pooyyr5be6fc3khfmbi\",\"amount\":
+ * \"1000000000000000000000000000\",  \"type\": \"state\",  \"representative\":
+ * \"xrb_1cwswatjifmjnmtu5toepkwca64m7qtuukizyjxsghujtpdr9466wjmn89d8\",
+ * \"previous\":
+ * \"4635A79A0474ACD84C42DC847163E15867E547CAEF3367E7FAA45187E965B88D\",
+ * \"work\": \"9152b3d12cc0196b\",  \"signature\":
+ * \"A70818F4A9F533CFC52EFE8454F5243C8E5B6801DC82E613112891D58825AE084D6E154AF88F1A85CF7DCDB6E4FA92205829474548064FABB33858D7020BA80C\",
+ * \"link\":
+ * \"3BC45C628A4269D841272B48C67E89927B2B35A4B01BD3A71F9FBD3523D492C6\",
+ * \"balance\": \"10000000000000000000000000000\"}" "{\"account\":
+ * \"xrb_1n3hccnsf5tz4pbuftk69p7jobuh6afcriqqzbkd5pooyyr5be6fc3khfmbi\",
+ * \"type\": \"state\", \"representative\":
+ * \"xrb_1cwswatjifmjnmtu5toepkwca64m7qtuukizyjxsghujtpdr9466wjmn89d8\",
+ * \"previous\":
+ * \"D09342477E592B53A0C031A1D529476732DACEFE03CCD3867294D2DF0995789D\",
+ * \"link\":
+ * \"261F4B979009FD5665331AC72A95C8906285DCCAAACE2FD0F07AA39D738A1216\",
+ * \"balance\": \"9000000000000000000000000000\"}"
  */
-int nano_cmd_block_sign(int argc, char **argv);
+int nano_cmd_block_sign( int argc, char **argv );
 
 #endif
