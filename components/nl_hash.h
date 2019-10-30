@@ -21,6 +21,9 @@ typedef jolt_hash_t nl_hash_ctx_t;
  */
 static inline int nl_hash_init(nl_hash_ctx_t *ctx, uint8_t hash_len)
 {
+    if(NULL == ctx) return -1;
+    memzero(ctx, sizeof(nl_hash_ctx_t));
+
     ctx->type        = JOLT_HASH_BLAKE2B;
     ctx->hash        = NULL;
     ctx->hash_len    = hash_len;

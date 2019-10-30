@@ -12,6 +12,7 @@ TEST_CASE( "address", MODULE_NAME )
 {
     vault_set_unit_test( CONFIG_APP_COIN_PATH, CONFIG_APP_BIP32_KEY );
     int res;
+    jolt_json_del_app();
 
     /* No Index */
     JOLT_CLI_UNIT_TEST_CTX( 4096 )
@@ -56,8 +57,18 @@ TEST_CASE( "address", MODULE_NAME )
 TEST_CASE( "contact", MODULE_NAME )
 {
     vault_set_unit_test( CONFIG_APP_COIN_PATH, CONFIG_APP_BIP32_KEY );
-    printf( "test" );
-    TEST_FAIL();
+    jolt_json_del_app();
+
+    /* Add */
+    JOLT_CLI_UNIT_TEST_CTX(4096)
+    {
+        const char *argv[] = {"contact", "add", "Satoshi Nakamoto", "xrb_1jo1twa11et111111111111111111111111111111111111111118n3ca6q5"};
+        TEST_ASSERT_EQUAL_INT_MESSAGE( JOLT_CLI_NON_BLOCKING, japp_main( argcount( argv ), argv ), buf );
+        vTaskDelay(pdMS_TO_TICKS(50));
+        JOLT_ENTER;  /* Accept new contact */
+        TEST_ASSERT_EQUAL_INT( 0, jolt_cli_get_return() );
+        TEST_ASSERT_EQUAL_STRING( "placeholder", buf);
+    }
 }
 
 TEST_CASE( "block_sign", MODULE_NAME )
