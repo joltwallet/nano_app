@@ -67,7 +67,10 @@ TEST_CASE( "contact", MODULE_NAME )
         vTaskDelay(pdMS_TO_TICKS(50));
         JOLT_ENTER;  /* Accept new contact */
         TEST_ASSERT_EQUAL_INT( 0, jolt_cli_get_return() );
-        TEST_ASSERT_EQUAL_STRING( "placeholder", buf);
+        TEST_ASSERT_EQUAL_STRING( "{\"name\":\"Satoshi Nakamoto\","
+                "\"address\":\"xrb_1jo1twa11et111111111111111111111111111111111111111118n3ca6q5\","
+                "\"index\":1}",
+                buf);
     }
 }
 

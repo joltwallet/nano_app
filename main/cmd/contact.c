@@ -49,12 +49,12 @@ static void confirmation_cb( jolt_gui_obj_t *obj, jolt_gui_event_t event )
 
         {
             char *text;
-            text = cJSON_Print( new_contact );
+            text = cJSON_PrintUnformatted( new_contact );
             if( NULL == text ) {
                 /* TODO error handle */
                 return;
             }
-            printf( "%s\n", text );
+            printf( "%s", text );
             free( text );
         }
 
