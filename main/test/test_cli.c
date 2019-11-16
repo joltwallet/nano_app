@@ -77,6 +77,35 @@ TEST_CASE( "contact", MODULE_NAME )
 TEST_CASE( "block_sign", MODULE_NAME )
 {
     vault_set_unit_test( CONFIG_APP_COIN_PATH, CONFIG_APP_BIP32_KEY );
-    printf( "test" );
+    jolt_json_del_app();
+
+    /* Successful Send */
+    //JOLT_CLI_UNIT_TEST_CTX(4096)
+    {
+        const char *argv[] = {
+            "block_sign",
+            "0",
+            "{\"type\": \"state\","
+                "\"account\": \"nano_3of1t4mf4y8udapj45zgg5bewmc79sagbmwifsmaikbmyzodst1hk55pjqcz\","
+                "\"previous\": \"DEADBEEF000102030405060708090A0B0C0D0E0F101112131415161718191A1B\","
+                "\"representative\": \"nano_1cwswatjifmjnmtu5toepkwca64m7qtuukizyjxsghujtpdr9466wjmn89d8\","
+                "\"balance\": \"200000000000000000000000000000000000\","
+                "\"link\": \"095B645B6C0CCCB52DD65218DE613CE13CEA58A850A80C3F704291B698A50417\"}",
+            "{\"type\": \"state\","
+                "\"account\": \"nano_3of1t4mf4y8udapj45zgg5bewmc79sagbmwifsmaikbmyzodst1hk55pjqcz\","
+                "\"previous\": \"56D2E7D412223C9E7432C2F80D21996CA670CD20798C1E67F6AE3847D947E0BE\","
+                "\"representative\": \"nano_1cwswatjifmjnmtu5toepkwca64m7qtuukizyjxsghujtpdr9466wjmn89d8\","
+                "\"balance\": \"100000000000000000000000000000000000\","
+                "\"link\": \"42DD308BA91AA225B9DD0EF15A68A8DD49E2940C6277A4BFAC363E1C8BF14279\"}",
+        };
+        japp_main( argcount( argv ), argv );
+        //TEST_ASSERT_EQUAL_INT_MESSAGE( JOLT_CLI_NON_BLOCKING, japp_main( argcount( argv ), argv ), buf );
+        vTaskDelay(pdMS_TO_TICKS(500));
+        JOLT_ENTER;  /* Accept signing prompt */
+        vTaskDelay(pdMS_TO_TICKS(50));
+        TEST_ASSERT_EQUAL_INT( 0, jolt_cli_get_return() );
+        //TEST_ASSERT_EQUAL_STRING( "", buf);
+    }
+
     TEST_FAIL();
 }
