@@ -46,7 +46,7 @@ uint32_t nano_index_get( cJSON *json )
 {
     uint32_t index = 0;
     cJSON *obj;
-    bool del_json = false;
+    bool del_json = false;  // JSON object needs to be freed
 
     if( NULL == json ) {
         json     = nano_get_json();

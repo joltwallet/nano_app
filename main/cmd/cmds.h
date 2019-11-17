@@ -5,16 +5,20 @@ int nano_cmd_count( int argc, char **argv );
 
 /**
  * @brief Print the Addresses of given index
+ * If index is not specified, defaults to last used in Jolt GUI.
+ *
  * Optionally takes a second argument to print the inclusive range.
  *
  * Examples:
  *
  *
- *     $ Nano address
+ *     jolt> Nano address
  *     {"addresses":[{"index":0,"address":nano_3of1t4mf4y8udapj45zgg5bewmc79sagbmwifsmaikbmyzodst1hk55pjqcz}]}
  *
- *     $ Nano address 0
+ *     jolt> Nano address 0
  *     {"addresses":[{"index":0,"address":nano_3of1t4mf4y8udapj45zgg5bewmc79sagbmwifsmaikbmyzodst1hk55pjqcz}]}
+ *     jolt> Nano address 1 4
+ *     {"addresses":[{"index":1,"address":"nano_3nxuasbi7ohysb41fgoomisepnrbbmpjt5m7rzjmfj1yw1erdrxcj7nq1eq1"},{"index":2,"address":"nano_3nyfu94d1b4hukrku4145ijtug6d5sngz7n96ea837pfx7c8s6rrr53q7pej"},{"index":3,"address":"nano_1umgo1godwfma7ik3t1qjkgko6x4w6x1ipt5soqx8txi9n346c1uzffxnq6q"},{"index":4,"address":"nano_3zw77prqkmo3ccpei78et95due7ioshh3hfogs8coqqhosccjnqs5r73sitx"}]}
  *
  */
 int nano_cmd_address( int argc, char **argv );

@@ -21,7 +21,8 @@ typedef struct confirm_obj_t {
     nl_block_t *new_block;
     confirm_cb_t cb;
     void *param;
-    double display_amount;  /* Purely for display purposes; do not use in financial computations. Negative indicates a "send" */
+    double display_amount; /* Purely for display purposes; do not use in financial computations. Negative indicates a
+                              "send" */
     bool is_send;
 } confirm_obj_t;
 
@@ -39,7 +40,7 @@ static void send_cb( jolt_gui_obj_t *btn, jolt_gui_event_t event )
 }
 
 /**
- * @brief Creates GUI confirmation prompt for send/receive blocks. 
+ * @brief Creates GUI confirmation prompt for send/receive blocks.
  *
  * May be called from the GUI or BG task.
  *
@@ -128,7 +129,7 @@ void nano_confirm_block( nl_block_t *head_block, nl_block_t *new_block, confirm_
     obj->new_block  = new_block;
     obj->cb         = cb;
     obj->param      = param;
-    obj->is_send    = true;  /* Safer by default to require a prompt */
+    obj->is_send    = true; /* Safer by default to require a prompt */
 
     if( head_block->type == STATE ) {
         /* Make sure the new_block's prev is the head_block by hashing head_block */
@@ -137,9 +138,8 @@ void nano_confirm_block( nl_block_t *head_block, nl_block_t *new_block, confirm_
             nl_block_compute_hash( head_block, head_block_hash );
             if( 0 != memcmp( head_block_hash, new_block->previous, BIN_256 ) ) {
                 char head_block_hash_hex[HEX_256];
-                sodium_bin2hex(head_block_hash_hex, sizeof(head_block_hash_hex),
-                        head_block_hash, BIN_256);
-                ESP_LOGE( TAG, "frontier (%s) and new_block's previous mismatch" , head_block_hash_hex);
+                sodium_bin2hex( head_block_hash_hex, sizeof( head_block_hash_hex ), head_block_hash, BIN_256 );
+                ESP_LOGE( TAG, "frontier (%s) and new_block's previous mismatch", head_block_hash_hex );
                 goto exit;
             }
         }
@@ -158,7 +158,9 @@ void nano_confirm_block( nl_block_t *head_block, nl_block_t *new_block, confirm_
             mbedtls_mpi_init( &transaction_amount );
             mbedtls_mpi_sub_mpi( &transaction_amount, &( new_block->balance ), &( head_block->balance ) );
             if( -1 == transaction_amount.s ) { obj->is_send = true; }
-            else { obj->is_send = false; }
+            else {
+                obj->is_send = false;
+            }
             if( E_SUCCESS != nl_mpi_to_nano_double( &transaction_amount, &obj->display_amount ) ) {
                 mbedtls_mpi_free( &transaction_amount );
                 goto exit;

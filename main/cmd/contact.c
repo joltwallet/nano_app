@@ -40,10 +40,10 @@ static void confirmation_cb( jolt_gui_obj_t *obj, jolt_gui_event_t event )
         cJSON_AddItemToArray( contacts, new_contact );
         jolt_json_write_app( json );
 
-        int index = cJSON_GetArraySize(contacts);
+        int index = cJSON_GetArraySize( contacts );
 
-        if( NULL == cJSON_AddNumberToObject( new_contact, "index", index) ) {
-            ESP_LOGE( TAG, "Failed to add number object \"index\"");
+        if( NULL == cJSON_AddNumberToObject( new_contact, "index", index ) ) {
+            ESP_LOGE( TAG, "Failed to add number object \"index\"" );
             // TODO error handle
         }
 
