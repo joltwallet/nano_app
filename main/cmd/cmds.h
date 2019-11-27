@@ -56,9 +56,11 @@ int nano_cmd_contact( int argc, char **argv );
  *
  * block_sign account_index frontier_block new_block
  *
- * account_index  - derivation index of account to use
- * frontier_block - escaped json representing the account's frontier block
- * new_block      - escaped json representing the block to sign
+ * account_index  - derivation index of account to use.
+ * frontier_block - escaped json representing the account's frontier block.
+ *                  If not provided, new_block MUST be an open-state block where
+ *                  the "previous" field is 64 zeros.
+ * new_block      - escaped json representing the block to sign.
  *
  * Example command;
  * Nano block_sign 0 "{\"account\":
