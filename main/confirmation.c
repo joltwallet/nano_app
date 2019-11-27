@@ -61,7 +61,7 @@ static void rep_change_cb( confirm_obj_t *obj )
 
         jolt_gui_obj_t *scr = jolt_gui_scr_text_create( title, buf );
         jolt_gui_scr_set_event_cb( scr, send_cb );
-        jolt_gui_scr_menu_set_param( scr, obj );
+        jolt_gui_scr_set_active_param( scr, obj );
     }
     else {
         ESP_LOGI( TAG, "Detected Receive" );

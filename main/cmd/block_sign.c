@@ -123,22 +123,15 @@ static void step_3( void *param )
         }
     }
 
-    /* Parse Signed Block Back Into Json */
-    char buf[1024];
-    if( E_SUCCESS != nanoparse_process( &d->block.new, buf, sizeof( buf ) ) ) {
-        printf( "Error Parsing Signed Block\n" );
-        d->response = 6;
-        goto exit;
+    /* Print signature */
+    {
+        hex512_t sig_hex = {0};
+        sodium_bin2hex( sig_hex, sizeof( sig_hex ), d->block.new.signature, BIN_512 );
+        strupr( sig_hex );
+        printf( "{\"signature\":\"%s\"}", sig_hex );
     }
 
-    /* Print signed block back */
-    /* todo: maybe just print signature */
-    printf( buf );
-    printf( "\n" );
-
     d->response = 0;
-
-    /* fall through */
 
 exit:
     cleanup_complete( d );

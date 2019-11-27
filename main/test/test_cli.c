@@ -81,7 +81,7 @@ TEST_CASE( "block_sign", MODULE_NAME )
     jolt_json_del_app();
 
     /* Successful Send */
-    // JOLT_CLI_UNIT_TEST_CTX(4096)
+    JOLT_CLI_UNIT_TEST_CTX( 4096 )
     {
         const char *argv[] = {
                 "block_sign",
@@ -99,14 +99,14 @@ TEST_CASE( "block_sign", MODULE_NAME )
                 "\"balance\": \"100000000000000000000000000000000000\","
                 "\"link\": \"42DD308BA91AA225B9DD0EF15A68A8DD49E2940C6277A4BFAC363E1C8BF14279\"}",
         };
-        japp_main( argcount( argv ), argv );
-        // TEST_ASSERT_EQUAL_INT_MESSAGE( JOLT_CLI_NON_BLOCKING, japp_main( argcount( argv ), argv ), buf );
-        vTaskDelay( pdMS_TO_TICKS( 500 ) );
+        TEST_ASSERT_EQUAL_INT_MESSAGE( JOLT_CLI_NON_BLOCKING, japp_main( argcount( argv ), argv ), buf );
+        vTaskDelay( pdMS_TO_TICKS( 1000 ) );
         JOLT_ENTER; /* Accept signing prompt */
         vTaskDelay( pdMS_TO_TICKS( 50 ) );
         TEST_ASSERT_EQUAL_INT( 0, jolt_cli_get_return() );
-        // TEST_ASSERT_EQUAL_STRING( "", buf);
+        TEST_ASSERT_EQUAL_STRING( "{\"signature\":"
+                                  "\"6AE1CB46AFB31C682EDD04286D320BB295108912C52AD801194E0AE9E607D88A9222545DA78A3C328"
+                                  "D01EFEB42074807FE79562CF4D2E3213606D77E6D128D09\"}",
+                                  buf );
     }
-
-    TEST_FAIL();
 }
