@@ -25,7 +25,7 @@ TEST_CASE( "address", MODULE_NAME )
                                   buf );
     }
 
-    /* Single Index */
+    /* Single Index (0) */
     JOLT_CLI_UNIT_TEST_CTX( 4096 )
     {
         const char *argv[] = {"address", "0"};
@@ -33,6 +33,17 @@ TEST_CASE( "address", MODULE_NAME )
         TEST_ASSERT_EQUAL_INT( 0, jolt_cli_get_return() );
         TEST_ASSERT_EQUAL_STRING( "{\"addresses\":[{\"index\":0,\"address\":\"nano_"
                                   "3of1t4mf4y8udapj45zgg5bewmc79sagbmwifsmaikbmyzodst1hk55pjqcz\"}]}",
+                                  buf );
+    }
+
+    /* Single Index (1) */
+    JOLT_CLI_UNIT_TEST_CTX( 4096 )
+    {
+        const char *argv[] = {"address", "1"};
+        TEST_ASSERT_EQUAL_INT( JOLT_CLI_NON_BLOCKING, japp_main( argcount( argv ), argv ) );
+        TEST_ASSERT_EQUAL_INT( 0, jolt_cli_get_return() );
+        TEST_ASSERT_EQUAL_STRING( "{\"addresses\":[{\"index\":1,\"address\":\"nano_"
+                                  "1u8yk67t9g3bhpym66yef3g89cef5fx6y5ttas7e9ej37k6edu9zew43wzsp\"}]}",
                                   buf );
     }
 
@@ -51,6 +62,66 @@ TEST_CASE( "address", MODULE_NAME )
                                   "\"index\":5,\"address\":\"nano_"
                                   "1wijizqdobawi6596botmgwaefr38dg643nf7ky93d9fs79qx5knys57foxa\"}]}",
                                   buf );
+    }
+
+    /* Single Index (Large <INT32_MAX Index) */
+    JOLT_CLI_UNIT_TEST_CTX( 4096 )
+    {
+        const char *argv[] = {"address", "1000000000"};
+        TEST_ASSERT_EQUAL_INT( JOLT_CLI_NON_BLOCKING, japp_main( argcount( argv ), argv ) );
+        TEST_ASSERT_EQUAL_INT( 0, jolt_cli_get_return() );
+        TEST_ASSERT_EQUAL_STRING( "{\"addresses\":[{\"index\":1000000000,\"address\":\"nano_"
+                                  "14mfj9wmhbnhoc538rexbpzg9nhj84wphhmariy4sfurknzbs5xiibuibmon\"}]}",
+                                  buf );
+    }
+
+    /* Single Index (Max Index) */
+    JOLT_CLI_UNIT_TEST_CTX( 4096 )
+    {
+        const char *argv[] = {"address", "2147483647"};
+        TEST_ASSERT_EQUAL_INT( JOLT_CLI_NON_BLOCKING, japp_main( argcount( argv ), argv ) );
+        TEST_ASSERT_EQUAL_INT( 0, jolt_cli_get_return() );
+        TEST_ASSERT_EQUAL_STRING( "{\"addresses\":[{\"index\":2147483647,\"address\":\"nano_"
+                                  "3eckfoihizwk4axo5a7z4tj31bchuer48ysnderzwrdoteapee8ygsw6dtmr\"}]}",
+                                  buf );
+    }
+
+    /* Single Index (>Max Index) */
+    JOLT_CLI_UNIT_TEST_CTX( 4096 )
+    {
+        const char *argv[] = {"address", "2147483648"};
+        TEST_ASSERT_EQUAL_INT( -2, japp_main( argcount( argv ), argv ) );
+    }
+
+    /* Invalid Index (Negative) */
+    {
+        const char *argv[] = {"address", "-1"};
+        TEST_ASSERT_EQUAL_INT( -2, japp_main( argcount( argv ), argv ) );
+    }
+
+    /* Max Index Upper */
+    JOLT_CLI_UNIT_TEST_CTX( 4096 )
+    {
+        const char *argv[] = {"address", "2147483647", "2147483647"};
+        TEST_ASSERT_EQUAL_INT( JOLT_CLI_NON_BLOCKING, japp_main( argcount( argv ), argv ) );
+        TEST_ASSERT_EQUAL_INT( 0, jolt_cli_get_return() );
+        TEST_ASSERT_EQUAL_STRING( "{\"addresses\":[{\"index\":2147483647,\"address\":\"nano_"
+                                  "3eckfoihizwk4axo5a7z4tj31bchuer48ysnderzwrdoteapee8ygsw6dtmr\"}]}",
+                                  buf );
+    }
+
+    /* >Max Index Upper */
+    JOLT_CLI_UNIT_TEST_CTX( 4096 )
+    {
+        const char *argv[] = {"address", "2147483647", "21474836478"};
+        TEST_ASSERT_EQUAL_INT( -3, japp_main( argcount( argv ), argv ) );
+    }
+
+    /* Invalid Range (Upper < Lower) */
+    JOLT_CLI_UNIT_TEST_CTX( 4096 )
+    {
+        const char *argv[] = {"address", "4", "3"};
+        TEST_ASSERT_EQUAL_INT( -4, japp_main( argcount( argv ), argv ) );
     }
 }
 
