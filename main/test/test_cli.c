@@ -6,8 +6,6 @@
 
 static const char MODULE_NAME[] = "[nano_app/cli]";
 
-#define argcount( x ) ( sizeof( x ) / sizeof( const char * ) )
-
 TEST_CASE( "address", MODULE_NAME )
 {
     vault_set_unit_test( CONFIG_APP_COIN_PATH, CONFIG_APP_BIP32_KEY );
@@ -21,7 +19,8 @@ TEST_CASE( "address", MODULE_NAME )
         TEST_ASSERT_EQUAL_INT( JOLT_CLI_NON_BLOCKING, japp_main( argcount( argv ), argv ) );
         TEST_ASSERT_EQUAL_INT( 0, jolt_cli_get_return() );
         TEST_ASSERT_EQUAL_STRING( "{\"addresses\":[{\"index\":0,\"address\":\"nano_"
-                                  "3of1t4mf4y8udapj45zgg5bewmc79sagbmwifsmaikbmyzodst1hk55pjqcz\"}]}",
+                                  "3of1t4mf4y8udapj45zgg5bewmc79sagbmwifsmaikbmyzodst1hk55pjqcz\"}]}"
+                                  "{\"exit_code\":0}",
                                   buf );
     }
 
@@ -32,7 +31,8 @@ TEST_CASE( "address", MODULE_NAME )
         TEST_ASSERT_EQUAL_INT( JOLT_CLI_NON_BLOCKING, japp_main( argcount( argv ), argv ) );
         TEST_ASSERT_EQUAL_INT( 0, jolt_cli_get_return() );
         TEST_ASSERT_EQUAL_STRING( "{\"addresses\":[{\"index\":0,\"address\":\"nano_"
-                                  "3of1t4mf4y8udapj45zgg5bewmc79sagbmwifsmaikbmyzodst1hk55pjqcz\"}]}",
+                                  "3of1t4mf4y8udapj45zgg5bewmc79sagbmwifsmaikbmyzodst1hk55pjqcz\"}]}"
+                                  "{\"exit_code\":0}",
                                   buf );
     }
 
@@ -43,7 +43,8 @@ TEST_CASE( "address", MODULE_NAME )
         TEST_ASSERT_EQUAL_INT( JOLT_CLI_NON_BLOCKING, japp_main( argcount( argv ), argv ) );
         TEST_ASSERT_EQUAL_INT( 0, jolt_cli_get_return() );
         TEST_ASSERT_EQUAL_STRING( "{\"addresses\":[{\"index\":1,\"address\":\"nano_"
-                                  "1u8yk67t9g3bhpym66yef3g89cef5fx6y5ttas7e9ej37k6edu9zew43wzsp\"}]}",
+                                  "1u8yk67t9g3bhpym66yef3g89cef5fx6y5ttas7e9ej37k6edu9zew43wzsp\"}]}"
+                                  "{\"exit_code\":0}",
                                   buf );
     }
 
@@ -60,7 +61,8 @@ TEST_CASE( "address", MODULE_NAME )
                                   "\"index\":4,\"address\":\"nano_"
                                   "1gi536w1r1fe4q8i9qdmpenp4w84r6d8mpefyezxg77mywobmzcj7ka1umzw\"},{"
                                   "\"index\":5,\"address\":\"nano_"
-                                  "1wijizqdobawi6596botmgwaefr38dg643nf7ky93d9fs79qx5knys57foxa\"}]}",
+                                  "1wijizqdobawi6596botmgwaefr38dg643nf7ky93d9fs79qx5knys57foxa\"}]}"
+                                  "{\"exit_code\":0}",
                                   buf );
     }
 
@@ -71,7 +73,8 @@ TEST_CASE( "address", MODULE_NAME )
         TEST_ASSERT_EQUAL_INT( JOLT_CLI_NON_BLOCKING, japp_main( argcount( argv ), argv ) );
         TEST_ASSERT_EQUAL_INT( 0, jolt_cli_get_return() );
         TEST_ASSERT_EQUAL_STRING( "{\"addresses\":[{\"index\":1000000000,\"address\":\"nano_"
-                                  "14mfj9wmhbnhoc538rexbpzg9nhj84wphhmariy4sfurknzbs5xiibuibmon\"}]}",
+                                  "14mfj9wmhbnhoc538rexbpzg9nhj84wphhmariy4sfurknzbs5xiibuibmon\"}]}"
+                                  "{\"exit_code\":0}",
                                   buf );
     }
 
@@ -82,7 +85,8 @@ TEST_CASE( "address", MODULE_NAME )
         TEST_ASSERT_EQUAL_INT( JOLT_CLI_NON_BLOCKING, japp_main( argcount( argv ), argv ) );
         TEST_ASSERT_EQUAL_INT( 0, jolt_cli_get_return() );
         TEST_ASSERT_EQUAL_STRING( "{\"addresses\":[{\"index\":2147483647,\"address\":\"nano_"
-                                  "3eckfoihizwk4axo5a7z4tj31bchuer48ysnderzwrdoteapee8ygsw6dtmr\"}]}",
+                                  "3eckfoihizwk4axo5a7z4tj31bchuer48ysnderzwrdoteapee8ygsw6dtmr\"}]}"
+                                  "{\"exit_code\":0}",
                                   buf );
     }
 
@@ -106,7 +110,8 @@ TEST_CASE( "address", MODULE_NAME )
         TEST_ASSERT_EQUAL_INT( JOLT_CLI_NON_BLOCKING, japp_main( argcount( argv ), argv ) );
         TEST_ASSERT_EQUAL_INT( 0, jolt_cli_get_return() );
         TEST_ASSERT_EQUAL_STRING( "{\"addresses\":[{\"index\":2147483647,\"address\":\"nano_"
-                                  "3eckfoihizwk4axo5a7z4tj31bchuer48ysnderzwrdoteapee8ygsw6dtmr\"}]}",
+                                  "3eckfoihizwk4axo5a7z4tj31bchuer48ysnderzwrdoteapee8ygsw6dtmr\"}]}"
+                                  "{\"exit_code\":0}",
                                   buf );
     }
 
@@ -122,27 +127,6 @@ TEST_CASE( "address", MODULE_NAME )
     {
         const char *argv[] = {"address", "4", "3"};
         TEST_ASSERT_EQUAL_INT( -4, japp_main( argcount( argv ), argv ) );
-    }
-}
-
-TEST_CASE( "contact", MODULE_NAME )
-{
-    vault_set_unit_test( CONFIG_APP_COIN_PATH, CONFIG_APP_BIP32_KEY );
-    jolt_json_del_app();
-
-    /* Add */
-    JOLT_CLI_UNIT_TEST_CTX( 4096 )
-    {
-        const char *argv[] = {"contact", "add", "Satoshi Nakamoto",
-                              "xrb_1jo1twa11et111111111111111111111111111111111111111118n3ca6q5"};
-        TEST_ASSERT_EQUAL_INT_MESSAGE( JOLT_CLI_NON_BLOCKING, japp_main( argcount( argv ), argv ), buf );
-        vTaskDelay( pdMS_TO_TICKS( 50 ) );
-        JOLT_ENTER; /* Accept new contact */
-        TEST_ASSERT_EQUAL_INT( 0, jolt_cli_get_return() );
-        TEST_ASSERT_EQUAL_STRING( "{\"name\":\"Satoshi Nakamoto\","
-                                  "\"address\":\"xrb_1jo1twa11et111111111111111111111111111111111111111118n3ca6q5\","
-                                  "\"index\":1}",
-                                  buf );
     }
 }
 
@@ -174,7 +158,8 @@ TEST_CASE( "block_sign", MODULE_NAME )
         TEST_ASSERT_EQUAL_INT( 0, jolt_cli_get_return() );
         TEST_ASSERT_EQUAL_STRING( "{\"signature\":"
                                   "\"6AE1CB46AFB31C682EDD04286D320BB295108912C52AD801194E0AE9E607D88A9222545DA78A3C328"
-                                  "D01EFEB42074807FE79562CF4D2E3213606D77E6D128D09\"}",
+                                  "D01EFEB42074807FE79562CF4D2E3213606D77E6D128D09\"}"
+                                  "{\"exit_code\":0}",
                                   buf );
     }
 
@@ -216,7 +201,29 @@ TEST_CASE( "block_sign", MODULE_NAME )
         TEST_ASSERT_EQUAL_INT( 0, jolt_cli_get_return() );
         TEST_ASSERT_EQUAL_STRING( "{\"signature\":"
                                   "\"9C6FA0D277C6D294909E437AA13AD13D96491FF05E664D70F8CB0352B267F0AA70C4D9CA74AA7C208"
-                                  "0BA7F23D320C33CBCEFF549E3CA637690A717C01521B80B\"}",
+                                  "0BA7F23D320C33CBCEFF549E3CA637690A717C01521B80B\"}"
+                                  "{\"exit_code\":0}",
                                   buf );
     }
+
+    /* Only a rep change */
+    // TODO
+
+    /* Rep change and a send */
+    // TODO
+
+    /* Rep change and a receive */
+    // TODO
+
+    /* Invalid "previous" hash */
+    // TODO
+
+    /* Large account index */
+    // TODO
+
+    /* Invalidly large account index */
+    // TODO
+
+    /* Invalid Negative account index */
+    // TODO
 }

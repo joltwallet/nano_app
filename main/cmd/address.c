@@ -4,15 +4,14 @@
 #include "jolt_lib.h"
 #include "nano_helpers.h"
 #include "nano_lib.h"
-#include "errno.h"
 
-static uint32_t lower=0, upper=0;
+static uint32_t lower = 0, upper = 0;
 static const char TAG[] = "nano_cmd_address";
 
 enum {
-    NANO_ADDRESS_INVALID_ARGC = -1,
-    NANO_ADDRESS_INVALID_LWR = -2,
-    NANO_ADDRESS_INVALID_UPR = -3,
+    NANO_ADDRESS_INVALID_ARGC  = -1,
+    NANO_ADDRESS_INVALID_LWR   = -2,
+    NANO_ADDRESS_INVALID_UPR   = -3,
     NANO_ADDRESS_INVALID_RANGE = -4,
 };
 
@@ -49,16 +48,16 @@ int nano_cmd_address( int argc, char **argv )
         /* Print only currently selected address */
         lower = nano_index_get( NULL );
         upper = lower;
-        if( lower > INT32_MAX ) return NANO_ADDRESS_INVALID_LWR; 
+        if( lower > INT32_MAX ) return NANO_ADDRESS_INVALID_LWR;
     }
     else {
         char *endptr;
 
         errno = 0;
         lower = strtoul( argv[1], &endptr, 10 );
-        if(lower > INT32_MAX || argv[1] == endptr || 0 != errno ) return NANO_ADDRESS_INVALID_LWR;
+        if( lower > INT32_MAX || argv[1] == endptr || 0 != errno ) return NANO_ADDRESS_INVALID_LWR;
 
-        if( 3 == argc ) { 
+        if( 3 == argc ) {
             errno = 0;
             upper = strtoul( argv[2], &endptr, 10 );
             if( upper > INT32_MAX || argv[2] == endptr || 0 != errno ) return NANO_ADDRESS_INVALID_UPR;
@@ -68,7 +67,7 @@ int nano_cmd_address( int argc, char **argv )
             upper = lower;
         }
     }
-    ESP_LOGD(TAG, "Lower: %u, Upper: %u", lower, upper);
+    ESP_LOGD( TAG, "Lower: %u, Upper: %u", lower, upper );
 
     vault_refresh( failure_cb, success_cb, NULL );
 

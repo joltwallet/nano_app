@@ -54,9 +54,9 @@ static int console( int argc, const char **argv )
 
     cmd = ( esp_console_cmd_t ) {
             .command = "contact",
-            .help    = "Update Nano Contact (index, name, address)",
+            .help    = "Update Nano contact book",
             .hint    = NULL,
-            .func    = &nano_cmd_contact,
+            .func    = &jolt_app_cmd_contact,
     };
     jolt_cli_sub_cmd_register( subconsole, &cmd );
 
