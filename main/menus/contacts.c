@@ -167,7 +167,10 @@ static void processing_cb_1( jolt_gui_obj_t *num_scr, jolt_gui_event_t event )
             }
             dst_address = cJSON_GetStringValue( json_address );
             ESP_LOGD( TAG, "Contact address: %s", dst_address );
-            nl_address_to_public( d->block.send.link, dst_address );
+            if( E_SUCCESS != nl_address_to_public( d->block.send.link, dst_address ) ) {
+                ESP_LOGE( TAG, "Invalid contact address" );
+                goto exit;
+            }
         }
 
         /* Populate transaction Amount. */
